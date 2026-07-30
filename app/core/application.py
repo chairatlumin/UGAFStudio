@@ -8,7 +8,7 @@ from app.gui.main_window import MainWindow
 
 
 class UGAFApplication:
-    """Main application controller."""
+    """Application bootstrap."""
 
     def __init__(self, app: QApplication) -> None:
         self.app = app
@@ -21,6 +21,8 @@ class UGAFApplication:
         self.window = MainWindow()
 
     def start(self) -> None:
+        """Start application."""
+
         self.logger.info("UGAF Studio started")
 
         self.window.show()

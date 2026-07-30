@@ -8,9 +8,12 @@ from app.core.application import UGAFApplication
 
 
 def main() -> None:
+    """Application entry point."""
+
     app = QApplication(sys.argv)
 
     application = UGAFApplication(app)
+
     application.start()
 
     sys.exit(app.exec())

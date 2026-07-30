@@ -1,45 +1,43 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QObject, QTimer
+from PySide6.QtCore import QTimer
 
 from app.capture.capture_service import CaptureService
 from app.capture.image_converter import ImageConverter
 from app.core.fps import FPSCounter
 from app.gui.widgets.preview_widget import PreviewWidget
 from app.gui.widgets.status_widget import StatusWidget
+from app.input.mouse_service import MouseService
 
 
-class CaptureController(QObject):
-    """Control desktop capture and update UI."""
+class CaptureController:
+    """Controls desktop capture and updates the UI."""
 
     def __init__(
         self,
         preview: PreviewWidget,
         status: StatusWidget,
     ) -> None:
-        super().__init__()
-
         self._preview = preview
         self._status = status
 
         self._capture = CaptureService()
+        self._mouse = MouseService()
         self._fps = FPSCounter()
 
-        self._timer = QTimer(self)
+        self._timer = QTimer()
         self._timer.timeout.connect(self._update)
 
     def start(self) -> None:
-        """Start capture."""
-
+        """Start capture loop."""
         self._timer.start(33)
 
     def stop(self) -> None:
-        """Stop capture."""
-
+        """Stop capture loop."""
         self._timer.stop()
 
     def _update(self) -> None:
-        """Capture one frame."""
+        """Update preview and status."""
 
         frame = self._capture.capture()
 
@@ -50,6 +48,13 @@ class CaptureController(QObject):
         fps = self._fps.tick()
 
         self._status.set_fps(fps)
+
+        mouse_x, mouse_y = self._mouse.position()
+
+        self._status.set_mouse(
+            mouse_x,
+            mouse_y,
+        )
 
         width, height = self._capture.monitor_size()
 

@@ -5,18 +5,17 @@ from PySide6.QtWidgets import QLabel
 
 
 class StatusWidget(QLabel):
-    """Displays runtime status."""
+    """Displays runtime information."""
 
     def __init__(self) -> None:
         super().__init__()
 
         self.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
-        self._fps: float = 0.0
-        self._mouse_x: int = 0
-        self._mouse_y: int = 0
-        self._resolution: str = "-"
-        self._pixel: str = "-"
+        self._fps = 0.0
+        self._mouse_x = 0
+        self._mouse_y = 0
+        self._resolution = "-"
 
         self._refresh()
 
@@ -33,16 +32,11 @@ class StatusWidget(QLabel):
         self._resolution = resolution
         self._refresh()
 
-    def set_pixel(self, pixel: str) -> None:
-        self._pixel = pixel
-        self._refresh()
-
     def _refresh(self) -> None:
         self.setText(
-            (
-                f"FPS : {self._fps:.1f}\n"
-                f"Mouse : {self._mouse_x}, {self._mouse_y}\n"
-                f"Resolution : {self._resolution}\n"
-                f"Pixel : {self._pixel}"
-            )
+            f"""FPS : {self._fps:.1f}
+Mouse : {self._mouse_x}, {self._mouse_y}
+Resolution : {self._resolution}
+Pixel : -
+"""
         )

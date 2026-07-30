@@ -12,11 +12,13 @@ class PreviewWidget(QLabel):
         super().__init__()
 
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         self.setText("Waiting for Capture...")
+
         self.setMinimumSize(960, 540)
 
-    def update_pixmap(self, pixmap: QPixmap) -> None:
-        """Update preview image."""
+    def set_frame(self, pixmap: QPixmap) -> None:
+        """Display captured frame."""
 
         self.setPixmap(
             pixmap.scaled(
@@ -25,8 +27,3 @@ class PreviewWidget(QLabel):
                 Qt.TransformationMode.SmoothTransformation,
             )
         )
-
-    def set_frame(self, pixmap: QPixmap) -> None:
-        """Alias for update_pixmap()."""
-
-        self.update_pixmap(pixmap)
