@@ -29,9 +29,9 @@ logs/*.log
 screenshots/
 
 # Reports
-reports/html/
-reports/json/
-reports/excel/
+app/reports/html/
+app/reports/json/
+app/reports/excel/
 
 # OS
 .DS_Store

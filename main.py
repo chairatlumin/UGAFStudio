@@ -1,17 +1,17 @@
-﻿import sys
+from __future__ import annotations
+
+import sys
 
 from PySide6.QtWidgets import QApplication
 
-from gui.main_window import MainWindow
+from app.core.application import UGAFApplication
 
 
-def main():
-
+def main() -> None:
     app = QApplication(sys.argv)
 
-    window = MainWindow()
-
-    window.show()
+    application = UGAFApplication(app)
+    application.start()
 
     sys.exit(app.exec())
 

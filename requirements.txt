@@ -5,11 +5,3 @@ mss
 Pillow
 loguru
 python-dotenv
-black
-isort
-flake8
-mypy
-pre-commit
-pytest
-pytest-html
-pytest-cov

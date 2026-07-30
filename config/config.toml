@@ -1,0 +1,7 @@
+[window]
+width = 1400
+height = 900
+
+[capture]
+fps = 30
+monitor = 1

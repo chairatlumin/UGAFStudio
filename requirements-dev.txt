@@ -1,0 +1,10 @@
+﻿-r requirements.txt
+
+ruff
+mypy
+
+pytest
+pytest-cov
+pytest-html
+
+pre-commit

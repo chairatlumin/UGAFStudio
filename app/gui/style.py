@@ -1,4 +1,4 @@
-﻿STYLE = """
+STYLE = """
 QMainWindow{
     background:#202124;
 }

@@ -1,13 +1,28 @@
-﻿[tool.black]
-line-length = 100
-target-version = ["py312"]
+[project]
+name = "ugaf-studio"
+version = "0.1.0"
+requires-python = ">=3.14"
 
-[tool.isort]
-profile = "black"
-line_length = 100
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "W",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.14"
+explicit_package_bases = true
+mypy_path = "."
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
