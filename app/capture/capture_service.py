@@ -39,3 +39,11 @@ class CaptureService:
             self._monitor["width"],
             self._monitor["height"],
         )
+
+    def monitor_origin(self) -> tuple[int, int]:
+        """Return monitor top-left screen coordinates."""
+
+        return (
+            self._monitor["left"],
+            self._monitor["top"],
+        )

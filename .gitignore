@@ -2,36 +2,35 @@
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyd
 
 # Virtual Environment
 .venv/
 venv/
-env/
 
-# IDE
-.idea/
+# Coverage
+.coverage
+htmlcov/
+
+# Pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# VS Code
 .vscode/
 
 # Build
-build/
 dist/
-*.spec
-
-# Cache
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
+build/
 
 # Logs
-logs/*.log
-
-# Screenshots
-screenshots/
-
-# Reports
-app/reports/html/
-app/reports/json/
-app/reports/excel/
+logs/
+*.log
 
 # OS
 .DS_Store

@@ -3,6 +3,8 @@ from __future__ import annotations
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QLabel
 
+from app.vision.pixel_inspector import PixelColor
+
 
 class StatusWidget(QLabel):
     """Displays runtime information."""
@@ -16,6 +18,7 @@ class StatusWidget(QLabel):
         self._mouse_x = 0
         self._mouse_y = 0
         self._resolution = "-"
+        self._pixel: PixelColor | None = None
 
         self._refresh()
 
@@ -32,11 +35,21 @@ class StatusWidget(QLabel):
         self._resolution = resolution
         self._refresh()
 
+    def set_pixel(self, pixel: PixelColor | None) -> None:
+        self._pixel = pixel
+        self._refresh()
+
     def _refresh(self) -> None:
+        pixel_text = "-"
+
+        if self._pixel is not None:
+            red, green, blue = self._pixel.rgb
+            pixel_text = f"RGB({red}, {green}, {blue})  HEX {self._pixel.hex}"
+
         self.setText(
             f"""FPS : {self._fps:.1f}
 Mouse : {self._mouse_x}, {self._mouse_y}
 Resolution : {self._resolution}
-Pixel : -
+Pixel : {pixel_text}
 """
         )
