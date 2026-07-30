@@ -1,5 +1,7 @@
 """Core package."""
 
-from .application import UGAFApplication
+from .container import ServiceContainer
 
-__all__ = ["UGAFApplication"]
+__all__ = [
+    "ServiceContainer",
+]
