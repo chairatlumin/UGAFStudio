@@ -33,4 +33,15 @@ pytest
 
 ## Project Structure
 
-app/ capture/ controllers/ core/ gui/ input/ vision/ automation/ tests/
+```text
+app/       Application package (capture, vision, automation, input, gui,
+           controllers, core, qa, utils, database)
+config/    Application configuration
+models/    Shared data models
+services/  Service layer
+tests/     Automated tests
+docs/      Developer notes and design records
+scripts/   Developer tooling
+main.py    Application entry point
+launcher.py
+```
