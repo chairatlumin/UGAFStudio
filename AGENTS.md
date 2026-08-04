@@ -32,16 +32,22 @@ Every change must pass:
 
 ## Current Phase
 
-Desktop Inspector
+QA Framework (all roadmap phases implemented)
 
 ## Current Features
 
 - Live Preview
-- Capture Controller
-- FPS Counter
-- Mouse Position
-- Resolution
+- Multi-monitor capture (virtual desktop)
+- Pixel Inspector (RGB + HEX)
+- Screenshot
+- Region Capture
+- Vision: Template Matching, Color Detection, OCR
+- Automation: Mouse, Keyboard, Hotkeys, Gamepad, Macro, Script Runner
+- QA: Test Runner, HTML Report, Dashboard
+- GUI: Capture + QA menus, Dashboard tab, Logger
 
 ## Next Sprint
 
-Pixel Inspector
+- OCR tuning
+- Macro UI recording
+- Scripted QA test cases from disk
