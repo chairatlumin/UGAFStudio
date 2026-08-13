@@ -32,6 +32,10 @@ build/
 logs/
 *.log
 
+# App artifacts
+screenshots/
+reports/
+
 # OS
 .DS_Store
 Thumbs.db

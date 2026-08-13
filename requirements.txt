@@ -5,3 +5,7 @@ mss
 Pillow
 loguru
 python-dotenv
+pyautogui
+pytesseract
+keyboard
+inputs

@@ -4,36 +4,43 @@
 
 Foundation ✅
 
+- Project scaffolding
+- Config, logging, FPS counter
+- Ruff / mypy / pytest / pre-commit CI
+
 ## Phase 2
 
-Desktop Inspector
+Desktop Inspector ✅
 
-- Live Preview
-- Pixel Inspector
-- Screenshot
-- Region Capture
+- Live Preview ✅
+- Pixel Inspector ✅
+- Multi-monitor capture (virtual desktop) ✅
+- Screenshot ✅
+- Region Capture ✅
 
 ## Phase 3
 
-Vision
+Vision ✅
 
-- OCR
-- Template Matching
-- Object Detection
+- OCR ✅
+- Template Matching ✅
+- Object Detection (color + template) ✅
 
 ## Phase 4
 
-Automation
+Automation ✅
 
-- Mouse
-- Keyboard
-- Macro
-- Script Runner
+- Mouse ✅
+- Keyboard ✅
+- Hotkeys ✅
+- Gamepad ✅
+- Macro (record / replay / save) ✅
+- Script Runner ✅
 
 ## Phase 5
 
-QA Framework
+QA Framework ✅
 
-- Test Runner
-- Report
-- Dashboard
+- Test Runner ✅
+- Report (HTML) ✅
+- Dashboard ✅
