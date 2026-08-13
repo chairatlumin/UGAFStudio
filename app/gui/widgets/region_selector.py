@@ -69,7 +69,7 @@ class RegionSelector(QWidget):
 
         if self._start is not None and self._current is not None:
             region = self._region_from_points(self._start, self._current)
-            rect = QRect(region.left, region.top, region.width, region.height)
+            rect = self._selection_rect(region)
 
             path = QPainterPath()
             path.addRect(self.rect())
@@ -93,3 +93,15 @@ class RegionSelector(QWidget):
         height = abs(start.y() - end.y()) + 1
 
         return MonitorInfo(left=left, top=top, width=width, height=height)
+
+    def _selection_rect(self, region: MonitorInfo) -> QRect:
+        """Return the selection rectangle in widget-local coordinates."""
+
+        origin = self.pos()
+
+        return QRect(
+            region.left - origin.x(),
+            region.top - origin.y(),
+            region.width,
+            region.height,
+        )
