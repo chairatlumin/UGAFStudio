@@ -1,18 +1,18 @@
 from qa_framework.topology.models import Agent, RouteDecision, TopologyEdge
 
 
-def test_agent_creation():
+def test_agent_creation() -> None:
     a = Agent(id="unreal-specialist", capabilities=["unreal", "qa"])
     assert a.id == "unreal-specialist"
     assert "unreal" in a.capabilities
 
 
-def test_topology_edge():
+def test_topology_edge() -> None:
     e = TopologyEdge(source="hermes", target="unreal-specialist", weight=0.95)
     assert e.weight > 0
 
 
-def test_route_decision():
+def test_route_decision() -> None:
     d = RouteDecision(
         task_id="test-task",
         selected_agent="unreal-specialist",

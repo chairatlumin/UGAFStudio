@@ -10,12 +10,12 @@ CONFIDENCE_THRESHOLD_COMPOUND = 0.50
 
 
 class TopologyEngine:
-    def __init__(self):
+    def __init__(self) -> None:
         self.agents: dict[str, Agent] = {}
         self.edges: list[TopologyEdge] = []
         self.decision_log: list[RouteDecision] = []
 
-    def register_agent(self, agent: Agent):
+    def register_agent(self, agent: Agent) -> None:
         self.agents[agent.id] = agent
 
     def decide_route(self, task: Task) -> RouteDecision:

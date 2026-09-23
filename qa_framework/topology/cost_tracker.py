@@ -18,10 +18,10 @@ class AgentCostStats(BaseModel):
 
 
 class CoordinationCostTracker:
-    def __init__(self):
+    def __init__(self) -> None:
         self._stats: dict[str, AgentCostStats] = {}
 
-    def record_dispatch(self, agent_id: str, comm_tokens: int, comp_tokens: int):
+    def record_dispatch(self, agent_id: str, comm_tokens: int, comp_tokens: int) -> None:
         if agent_id not in self._stats:
             self._stats[agent_id] = AgentCostStats(agent_id=agent_id)
         s = self._stats[agent_id]

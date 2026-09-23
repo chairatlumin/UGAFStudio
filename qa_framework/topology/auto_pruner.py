@@ -5,7 +5,7 @@ from qa_framework.topology.models import Agent
 
 
 class AutoPruner:
-    def __init__(self, cost_tracker: CoordinationCostTracker, threshold: float = 0.3):
+    def __init__(self, cost_tracker: CoordinationCostTracker, threshold: float = 0.3) -> None:
         self.tracker = cost_tracker
         self.threshold = threshold
 

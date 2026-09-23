@@ -3,7 +3,7 @@ from qa_framework.topology.cost_tracker import CoordinationCostTracker
 from qa_framework.topology.models import Agent
 
 
-def test_prunes_high_cost_agents():
+def test_prunes_high_cost_agents() -> None:
     tracker = CoordinationCostTracker()
     tracker.record_dispatch("expensive-agent", comm_tokens=800, comp_tokens=200)
     agents = [
@@ -16,7 +16,7 @@ def test_prunes_high_cost_agents():
     assert active[0].id == "efficient-agent"
 
 
-def test_keeps_all_when_under_threshold():
+def test_keeps_all_when_under_threshold() -> None:
     tracker = CoordinationCostTracker()
     tracker.record_dispatch("a", comm_tokens=50, comp_tokens=500)
     agents = [Agent(id="a", capabilities=["qa"])]

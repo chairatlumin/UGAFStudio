@@ -24,7 +24,7 @@ def rank_agents_for_task(task: Task, agents: list[Agent]) -> list[Agent]:
 
 
 class TaskMatcher:
-    def __init__(self, agents: list[Agent]):
+    def __init__(self, agents: list[Agent]) -> None:
         self.agents = agents
 
     def match(self, task: Task, top_k: int = 3) -> list[Agent]:
