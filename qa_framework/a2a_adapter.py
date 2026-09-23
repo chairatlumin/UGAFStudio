@@ -3,6 +3,7 @@ from __future__ import annotations
 import enum
 import hashlib
 import json
+import os
 import re
 import threading
 import time
@@ -13,7 +14,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Any, Iterator, Optional
 
 
 class A2ATaskState(enum.Enum):
@@ -522,3 +523,330 @@ class OutputValidator:
 
     def is_safe(self, text: str) -> bool:
         return len(self.scan(text)) == 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# A2A TASK LIFECYCLE (Task 5–9)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@dataclass
+class TaskRecord:
+    """Mirrors Google A2A Task spec."""
+
+    task_id: str
+    task_type: str = "generic"
+    context_id: Optional[str] = None
+    status: str = "submitted"
+    history: list = field(default_factory=list)
+    artifacts: list = field(default_factory=list)
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    error: Optional[str] = None
+
+    def transition_to(self, new_status: str) -> None:
+        """Transition to new status, validating with state machine."""
+        if self.status == new_status:
+            return  # already in this state — no-op
+        sm = TaskStateMachine()
+        if not sm.can_transition(self.status, new_status):
+            raise ValueError(f"Invalid transition: {self.status} → {new_status}")
+        self.status = new_status
+        self.updated_at = datetime.now(timezone.utc).isoformat()
+
+    def add_artifact(self, artifact_id: str, content: str, revision: int = 0) -> dict:
+        artifact = {
+            "artifact_id": artifact_id,
+            "content": content,
+            "revision": revision,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        self.artifacts.append(artifact)
+        self.updated_at = datetime.now(timezone.utc).isoformat()
+        return artifact
+
+    def to_dict(self) -> dict:
+        return {
+            "task_id": self.task_id,
+            "task_type": self.task_type,
+            "context_id": self.context_id,
+            "status": self.status,
+            "history": self.history,
+            "artifacts": self.artifacts,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "error": self.error,
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict(), indent=2)
+
+
+class TaskStateMachine:
+    """A2A Task lifecycle state machine."""
+
+    def __init__(self) -> None:
+        self.states = {
+            "submitted",
+            "working",
+            "input-required",
+            "completed",
+            "failed",
+            "canceled",
+        }
+        self._transitions = {
+            "submitted": {"working", "canceled"},
+            "working": {"completed", "failed", "input-required"},
+            "input-required": {"working", "canceled"},
+            "completed": set(),
+            "failed": set(),
+            "canceled": set(),
+        }
+
+    def can_transition(self, from_state: str, to_state: str) -> bool:
+        if from_state not in self.states or to_state not in self.states:
+            return False
+        return to_state in self._transitions.get(from_state, set())
+
+
+@dataclass
+class TaskSession:
+    """Checkpoints running task state to disk for crash recovery."""
+
+    session_id: str
+    checkpoint_dir: str
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
+
+    def __post_init__(self) -> None:
+        os.makedirs(self.checkpoint_dir, exist_ok=True)
+
+    def _task_path(self, task_id: str) -> str:
+        return os.path.join(self.checkpoint_dir, f"{self.session_id}_{task_id}.json")
+
+    def save_checkpoint(self, task: TaskRecord) -> None:
+        with self._lock:
+            path = self._task_path(task.task_id)
+            with open(path, "w") as f:
+                json.dump(task.to_dict(), f, indent=2)
+
+    def load_checkpoint(self, task_id: str) -> TaskRecord:
+        path = self._task_path(task_id)
+        with open(path) as f:
+            data = json.load(f)
+        return TaskRecord(**data)
+
+    def list_recoverable_tasks(self) -> list[TaskRecord]:
+        result = []
+        with self._lock:
+            for fname in os.listdir(self.checkpoint_dir):
+                if fname.startswith(f"{self.session_id}_") and fname.endswith(".json"):
+                    path = os.path.join(self.checkpoint_dir, fname)
+                    with open(path) as f:
+                        data = json.load(f)
+                    t = TaskRecord(**data)
+                    if t.status in ("working", "input-required"):
+                        result.append(t)
+        return result
+
+    def delete_checkpoint(self, task_id: str) -> None:
+        path = self._task_path(task_id)
+        if os.path.exists(path):
+            os.remove(path)
+
+
+@dataclass
+class AgentRegistry:
+    """Agent Card registry — matches tasks to agents by capability."""
+
+    _agents: dict[str, dict] = field(default_factory=dict)
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
+
+    def register(self, agent_id: str, card: dict) -> None:
+        with self._lock:
+            self._agents[agent_id] = card
+
+    def unregister(self, agent_id: str) -> None:
+        with self._lock:
+            self._agents.pop(agent_id, None)
+
+    def can_handle(self, agent_id: str, task_type: str) -> bool:
+        card = self._agents.get(agent_id, {})
+        skills = card.get("skills", [])
+        capabilities = card.get("capabilities", [])
+        return task_type in skills or task_type in capabilities
+
+    def best_agent(self, task_type: str) -> Optional[str]:
+        candidates = []
+        for agent_id, card in self._agents.items():
+            skills = card.get("skills", [])
+            capabilities = card.get("capabilities", [])
+            if task_type in skills:
+                candidates.append((agent_id, len(skills)))
+            elif task_type in capabilities:
+                candidates.append((agent_id, len(capabilities) + 100))
+        if not candidates:
+            return None
+        candidates.sort(key=lambda x: x[1])
+        return candidates[0][0]
+
+    def list_agents(self) -> list[str]:
+        return list(self._agents.keys())
+
+
+@dataclass
+class TaskOrchestrator:
+    """Orchestrate multi-agent task execution patterns."""
+
+    def fan_out(self, tasks: list[TaskRecord], dispatch_fn: Any) -> list:
+        """Dispatch tasks to parallel workers, collect results sequentially."""
+        results = []
+        for t in tasks:
+            try:
+                result = dispatch_fn(t)
+                results.append(result)
+            except Exception as e:
+                t.transition_to("failed")
+                t.error = str(e)
+                results.append((t.task_id, f"error: {e}"))
+        return results
+
+    def pipeline(self, task: TaskRecord, stages: list[tuple]) -> TaskRecord:
+        """Execute sequential stages. Each stage is (fn, success_status)."""
+        for fn, success_status in stages:
+            fn(task)
+            if success_status:
+                task.transition_to(success_status)
+        return task
+
+
+@dataclass
+class ToolSelectionAdvisor:
+    """Pre-dispatch classifier: should this task be dispatched to an agent?"""
+
+    _code_keywords: list[str] = field(default_factory=lambda: [
+        "write", "create", "implement", "refactor", "fix", "debug", "test",
+        "parse", "generate", "build", "configure",
+        "function", "class", "module", "script", "api", "endpoint",
+        "sql", "query", "database",
+        "docker", "kubernetes", "terraform",
+    ])
+    _research_keywords: list[str] = field(default_factory=lambda: [
+        "summarize", "explain", "describe", "compare", "analyze",
+        "review", "check", "verify", "search", "find", "look up",
+        "what is", "how does", "why does", "difference between",
+        "pros and cons", "advantages", "disadvantages",
+    ])
+
+    def evaluate(self, task_description: str) -> dict:
+        """Evaluate task description and return dispatch recommendation."""
+        desc_lower = task_description.lower()
+        code_score = sum(1 for kw in self._code_keywords if kw in desc_lower)
+        research_score = sum(1 for kw in self._research_keywords if kw in desc_lower)
+
+        should_dispatch = code_score > research_score
+        total = code_score + research_score
+        confidence = min(0.5 + (abs(code_score - research_score) * 0.1), 0.95) if total > 0 else 0.5
+
+        if should_dispatch:
+            reasoning = (
+                f"Task requires code execution ({code_score} code signals "
+                f"vs {research_score} research signals)"
+            )
+        else:
+            reasoning = (
+                f"Task is research/analysis ({research_score} research signals "
+                f"vs {code_score} code signals)"
+            )
+
+        return {
+            "should_dispatch": should_dispatch,
+            "confidence": round(confidence, 2),
+            "reasoning": reasoning,
+        }
+
+
+@dataclass
+class ParallelDispatcher:
+    """Fan out multiple independent tasks using ThreadPoolExecutor."""
+
+    max_workers: int = 4
+    timeout_seconds: float = 30.0
+
+    def dispatch(self, tasks: list) -> list[dict]:
+        """Dispatch tasks in parallel, return list of {result|error} dicts in submission order."""
+        import concurrent.futures
+
+        results: list[dict] = [{"result": None, "error": "Not executed"} for _ in tasks]
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            future_to_idx = {}
+            for idx, task_fn in enumerate(tasks):
+                future = executor.submit(task_fn)
+                future_to_idx[future] = idx
+
+            try:
+                as_completed = concurrent.futures.as_completed(
+                    future_to_idx, timeout=self.timeout_seconds
+                )
+                for future in as_completed:
+                    idx = future_to_idx[future]
+                    try:
+                        result = future.result(timeout=self.timeout_seconds)
+                        results[idx] = {"result": result, "error": None}
+                    except concurrent.futures.TimeoutError:
+                        results[idx] = {"result": None, "error": "Task timed out"}
+                    except Exception as e:
+                        results[idx] = {"result": None, "error": str(e)}
+            except concurrent.futures.TimeoutError:
+                # Timeout from as_completed - remaining futures already have default error
+                pass
+
+        return results
+
+
+@dataclass
+class DispatchScore:
+    """Score for a single dispatch event."""
+
+    necessary: int  # 1-5: was this dispatch needed?
+    complete: int   # 1-5: does the output fully address the task?
+    efficient: int  # 1-5: is the output appropriately concise?
+
+    def to_dict(self) -> dict:
+        return {"necessary": self.necessary, "complete": self.complete, "efficient": self.efficient}
+
+
+@dataclass
+class DispatchEvaluator:
+    """Post-dispatch quality scorer for agent outputs."""
+
+    def evaluate(self, task: str, output: str) -> dict:
+        """Score dispatch quality on 3 dimensions (1-5 each)."""
+        output_len = len(output)
+        task_len = len(task)
+
+        has_code = bool(re.search(r'def |class |import |function|=>|{', output))
+        has_action = bool(re.search(r'created|implemented|fixed|added|refactored', output.lower()))
+        necessary = 5 if (has_code or has_action) else 3
+
+        if output_len == 0:
+            complete = 1
+        elif output_len > task_len * 2:
+            complete = 4
+        else:
+            complete = 3
+
+        if output_len == 0:
+            efficient = 1
+        elif output_len < 200:
+            efficient = 5
+        elif output_len < 1000:
+            efficient = 4
+        elif output_len < 5000:
+            efficient = 3
+        elif output_len < 20000:
+            efficient = 2
+        else:
+            efficient = 1
+
+        score = DispatchScore(necessary=necessary, complete=complete, efficient=efficient)
+        return score.to_dict()

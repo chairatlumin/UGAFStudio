@@ -8,12 +8,20 @@ from qa_framework.a2a_adapter import (
     A2ATask,
     A2ATaskState,
     AdaptiveModelRouter,
+    AgentRegistry,
     AuditLogger,
     ConfidenceScorer,
     ConsensusDispatcher,
+    DispatchEvaluator,
     OutputValidator,
+    ParallelDispatcher,
     PermissionRegistry,
     SelfVerifyingOutput,
+    TaskOrchestrator,
+    TaskRecord,
+    TaskSession,
+    TaskStateMachine,
+    ToolSelectionAdvisor,
     VerificationContext,
     sanitize_brief,
 )
@@ -462,3 +470,216 @@ def test_full_security_stack():
         assert records[1]["verdict"] == "pass"
     finally:
         os.unlink(path)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# A2A TASK LIFECYCLE TESTS
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_task_record_creation():
+    t = TaskRecord(task_id="t1", task_type="qa_runner")
+    assert t.status == "submitted"
+    assert t.context_id is None
+    assert t.history == []
+    assert t.artifacts == []
+
+
+def test_task_record_state_transitions():
+    t = TaskRecord(task_id="t1")
+    t.transition_to("working")
+    assert t.status == "working"
+    t.transition_to("completed")
+    assert t.status == "completed"
+
+
+def test_task_record_invalid_transition():
+    t = TaskRecord(task_id="t1")
+    try:
+        t.transition_to("completed")  # Can't skip working
+        assert False, "Should have raised"
+    except ValueError:
+        pass
+
+
+def test_task_state_machine_graph():
+    sm = TaskStateMachine()
+    assert "submitted" in sm.states
+    assert "working" in sm.states
+    assert "input-required" in sm.states
+    assert "completed" in sm.states
+    assert "failed" in sm.states
+    assert "canceled" in sm.states
+    assert sm.can_transition("submitted", "working")
+    assert sm.can_transition("submitted", "canceled")
+    assert sm.can_transition("working", "completed")
+    assert sm.can_transition("working", "failed")
+    assert sm.can_transition("working", "input-required")
+    assert sm.can_transition("input-required", "working")
+    assert not sm.can_transition("completed", "working")
+    assert not sm.can_transition("failed", "completed")
+
+
+def test_task_session_save_checkpoint():
+    with tempfile.TemporaryDirectory() as tmp:
+        session = TaskSession(session_id="s1", checkpoint_dir=tmp)
+        task = TaskRecord(task_id="t1", task_type="qa_runner")
+        task.transition_to("working")
+        session.save_checkpoint(task)
+        assert os.path.exists(os.path.join(tmp, "s1_t1.json"))
+
+
+def test_task_session_load_checkpoint():
+    with tempfile.TemporaryDirectory() as tmp:
+        session = TaskSession(session_id="s1", checkpoint_dir=tmp)
+        task = TaskRecord(task_id="t1", task_type="qa_runner")
+        task.transition_to("working")
+        session.save_checkpoint(task)
+        loaded = session.load_checkpoint("t1")
+        assert loaded.task_id == "t1"
+        assert loaded.status == "working"
+
+
+def test_task_session_auto_recovery():
+    with tempfile.TemporaryDirectory() as tmp:
+        session = TaskSession(session_id="s1", checkpoint_dir=tmp)
+        task = TaskRecord(task_id="t1")
+        task.transition_to("working")
+        session.save_checkpoint(task)
+        session2 = TaskSession(session_id="s1", checkpoint_dir=tmp)
+        recoverable = session2.list_recoverable_tasks()
+        assert len(recoverable) == 1
+        assert recoverable[0].task_id == "t1"
+
+
+def test_agent_registry_register():
+    reg = AgentRegistry()
+    reg.register(
+        "unreal-specialist",
+        {"skills": ["game_qa", "unreal_engine"], "capabilities": ["perception"]}
+    )
+    assert reg.can_handle("unreal-specialist", "game_qa")
+    assert not reg.can_handle("unreal-specialist", "security_audit")
+
+
+def test_agent_registry_best_agent():
+    reg = AgentRegistry()
+    reg.register("agent1", {"skills": ["game_qa"]})
+    reg.register("agent2", {"skills": ["game_qa", "security_audit"]})
+    best = reg.best_agent("security_audit")
+    assert best == "agent2"
+
+
+def test_agent_registry_no_match():
+    reg = AgentRegistry()
+    reg.register("agent1", {"skills": ["game_qa"]})
+    assert reg.best_agent("nonexistent") is None
+
+
+def test_orchestrator_fan_out():
+    orch = TaskOrchestrator()
+    tasks = [TaskRecord(task_id="t1"), TaskRecord(task_id="t2")]
+    results = orch.fan_out(tasks, lambda t: (t.task_id, "completed"))
+    assert len(results) == 2
+    assert results[0] == ("t1", "completed")
+
+
+def test_orchestrator_pipeline():
+    orch = TaskOrchestrator()
+    task = TaskRecord(task_id="t1")
+    stages = [
+        (lambda t: t.transition_to("working"), "working"),
+        (lambda t: t.add_artifact("a1", "output"), "completed"),
+    ]
+    result = orch.pipeline(task, stages)
+    assert result.status == "completed"
+    assert len(result.artifacts) == 1
+
+
+# --- ToolSelectionAdvisor tests ---
+
+def test_tool_selection_advisor_needs_code_execution():
+    advisor = ToolSelectionAdvisor()
+    result = advisor.evaluate("Write a Python function that parses JSONL audit logs")
+    assert result["should_dispatch"] is True
+    assert result["confidence"] > 0.5
+
+def test_tool_selection_advisor_planner_can_handle():
+    advisor = ToolSelectionAdvisor()
+    result = advisor.evaluate("Summarize the key findings from the research brief")
+    assert result["should_dispatch"] is False
+    assert result["confidence"] > 0.5
+
+def test_tool_selection_advisor_returns_reasoning():
+    advisor = ToolSelectionAdvisor()
+    result = advisor.evaluate("Refactor the sanitize_brief function")
+    assert "reasoning" in result
+    assert isinstance(result["reasoning"], str)
+
+
+# --- ParallelDispatcher tests ---
+
+def test_parallel_dispatcher_fan_out():
+    import time
+    dispatcher = ParallelDispatcher(max_workers=3)
+    def mock_task(x):
+        time.sleep(0.1)
+        return x * 2
+    tasks = [lambda i=i: mock_task(i) for i in range(3)]
+    results = dispatcher.dispatch(tasks)
+    assert len(results) == 3
+    assert results[0]["result"] == 0
+    assert results[1]["result"] == 2
+    assert results[2]["result"] == 4
+
+def test_parallel_dispatcher_timeout():
+    import time
+    dispatcher = ParallelDispatcher(max_workers=2, timeout_seconds=0.5)
+    def slow_task():
+        time.sleep(2)
+        return "done"
+    tasks = [slow_task]
+    results = dispatcher.dispatch(tasks)
+    assert len(results) == 1
+    assert results[0]["error"] is not None
+
+def test_parallel_dispatcher_concurrent_speedup():
+    import time
+    dispatcher = ParallelDispatcher(max_workers=4)
+    def task():
+        time.sleep(0.2)
+        return "ok"
+    tasks = [task] * 4
+    start = time.time()
+    results = dispatcher.dispatch(tasks)
+    elapsed = time.time() - start
+    assert len(results) == 4
+    assert elapsed < 0.6
+
+
+# --- DispatchEvaluator tests ---
+
+def test_dispatch_evaluator_scores_quality():
+    evaluator = DispatchEvaluator()
+    task = "Write a Python function that adds two numbers"
+    output = "def add(a, b): return a + b"
+    score = evaluator.evaluate(task, output)
+    assert "necessary" in score
+    assert "complete" in score
+    assert "efficient" in score
+    assert 1 <= score["necessary"] <= 5
+    assert 1 <= score["complete"] <= 5
+    assert 1 <= score["efficient"] <= 5
+
+def test_dispatch_evaluator_empty_output():
+    evaluator = DispatchEvaluator()
+    task = "Implement the feature"
+    output = ""
+    score = evaluator.evaluate(task, output)
+    assert score["complete"] <= 2
+
+def test_dispatch_evaluator_overly_verbose_output():
+    evaluator = DispatchEvaluator()
+    task = "Add two numbers"
+    output = "Here is a 500-line implementation..." + "x" * 10000
+    score = evaluator.evaluate(task, output)
+    assert score["efficient"] <= 3
