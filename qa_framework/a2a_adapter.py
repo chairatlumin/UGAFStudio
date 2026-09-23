@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import enum
+import hashlib
 import json
+import re
 import threading
 import time
 import urllib.error
@@ -9,6 +11,9 @@ import urllib.request
 import uuid
 from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from typing import Iterator, Optional
 
 
 class A2ATaskState(enum.Enum):
@@ -358,3 +363,162 @@ class A2AAdapter:
                 return False
         task.mark_failed("Canceled by user")
         return True
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECURITY COMPONENTS (Task 1–4)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ---- Task 1: BriefSanitizer ----
+
+_INJECTION_PATTERNS = [
+    re.compile(r'#{1,6}\s*system\s*overrides?', re.IGNORECASE),
+    re.compile(r'ignore\s+(all\s+)?previous\s+instructions?', re.IGNORECASE),
+    re.compile(r'you\s+are\s+now\s+DAN', re.IGNORECASE),
+    re.compile(r'output\s+(your|the)\s+system\s+prompt', re.IGNORECASE),
+    re.compile(r'<\s*system\s*>', re.IGNORECASE),
+    re.compile(r'<\s*/\s*system\s*>', re.IGNORECASE),
+    re.compile(r'\[\s*system\s*\]', re.IGNORECASE),
+]
+
+
+def sanitize_brief(text: str) -> str:
+    """Strip prompt injection markers from brief text."""
+    result = text
+    for pattern in _INJECTION_PATTERNS:
+        result = pattern.sub('', result)
+    # Collapse 3+ blank lines to 2
+    result = re.sub(r'\n{3,}', '\n\n', result)
+    return result.strip()
+
+
+# ---- Task 2: PermissionRegistry ----
+
+@dataclass
+class _PermissionEntry:
+    granted_at: datetime
+    expires_at: Optional[datetime]
+
+
+@dataclass
+class PermissionRegistry:
+    """Thread-safe per-agent RBAC with TTL-based expiry."""
+    _entries: dict[str, _PermissionEntry] = field(default_factory=dict)
+    _lock: threading.Lock = field(default_factory=threading.Lock)
+
+    def grant(self, agent: str, tool: str, ttl_seconds: Optional[int] = None) -> None:
+        key = f"{agent}:{tool}"
+        now = datetime.utcnow()
+        expires = now + timedelta(seconds=ttl_seconds) if ttl_seconds else None
+        with self._lock:
+            self._entries[key] = _PermissionEntry(granted_at=now, expires_at=expires)
+
+    def revoke(self, agent: str, tool: str) -> None:
+        key = f"{agent}:{tool}"
+        with self._lock:
+            self._entries.pop(key, None)
+
+    def is_allowed(self, agent: str, tool: str) -> bool:
+        key = f"{agent}:{tool}"
+        with self._lock:
+            entry = self._entries.get(key)
+            if entry is None:
+                return False
+            if entry.expires_at and datetime.utcnow() > entry.expires_at:
+                del self._entries[key]
+                return False
+            return True
+
+    def list_permissions(self, agent: str) -> list[str]:
+        with self._lock:
+            return [k.split(":", 1)[1] for k in self._entries if k.startswith(f"{agent}:")]
+
+
+# ---- Task 3: AuditLogger ----
+
+@dataclass
+class AuditLogger:
+    """Append-only structured JSONL audit log."""
+    log_path: str
+    _lock: threading.Lock = field(default_factory=threading.Lock)
+
+    def log(
+        self,
+        agent: str,
+        task: str,
+        action: str,
+        input_hash: str = "",
+        output_hash: str = "",
+        verdict: str = "",
+        details: str = "",
+    ) -> None:
+        record = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "agent": agent,
+            "task": task,
+            "action": action,
+            "input_hash": input_hash,
+            "output_hash": output_hash,
+            "verdict": verdict,
+            "details": details,
+        }
+        line = json.dumps(record, ensure_ascii=False)
+        with self._lock:
+            with open(self.log_path, 'a', encoding='utf-8') as f:
+                f.write(line + '\n')
+
+    def read_all(self) -> Iterator[dict]:
+        path = Path(self.log_path)
+        if not path.exists():
+            return
+        with path.open('r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        yield json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+
+    @staticmethod
+    def hash_content(text: str) -> str:
+        return hashlib.sha256(text.encode('utf-8')).hexdigest()[:16]
+
+
+# ---- Task 4: OutputValidator ----
+
+@dataclass
+class OutputValidator:
+    """Scan agent outputs for secrets, injection markers, safety violations."""
+    _secret_patterns: list[re.Pattern] = field(
+        default_factory=lambda: [
+            re.compile(
+                r'(?:api_key|apikey|secret|token|password|passwd)\s*[:=]\s*["\']?[a-zA-Z0-9_\-]{16,}',
+                re.IGNORECASE,
+            ),
+            re.compile(r'sk-[a-zA-Z0-9]{20,}', re.IGNORECASE),
+            re.compile(r'AKIA[0-9A-Z]{16}', re.IGNORECASE),
+            re.compile(r'-----BEGIN\s+(?:RSA\s+)?PRIVATE\s+KEY-----', re.IGNORECASE),
+        ]
+    )
+    _injection_patterns: list[re.Pattern] = field(
+        default_factory=lambda: [
+            re.compile(r'ignore\s+(all\s+)?previous\s+instructions?', re.IGNORECASE),
+            re.compile(r'you\s+are\s+now\s+DAN', re.IGNORECASE),
+            re.compile(r'delete\s+(all\s+)?files', re.IGNORECASE),
+            re.compile(r'rm\s+-rf\s+/', re.IGNORECASE),
+        ]
+    )
+
+    def scan(self, text: str) -> list[str]:
+        issues: list[str] = []
+        for pat in self._secret_patterns:
+            if pat.search(text):
+                issues.append(f"Secret pattern detected: {pat.pattern[:50]}...")
+        for pat in self._injection_patterns:
+            if pat.search(text):
+                issues.append(f"Injection pattern detected: {pat.pattern[:50]}...")
+        return issues
+
+    def is_safe(self, text: str) -> bool:
+        return len(self.scan(text)) == 0
