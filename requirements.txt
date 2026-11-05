@@ -9,3 +9,9 @@ pyautogui
 pytesseract
 keyboard
 inputs
+pynput
+psutil
+openpyxl
+mcp
+fastmcp
+python-docx

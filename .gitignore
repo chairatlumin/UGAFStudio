@@ -53,7 +53,7 @@ graphify-out/
 *.bak[0-9]*
 diag_shine*.txt
 pytest_output.txt
-ion)*
+ion[)]*
 nul
 unused
 
