@@ -1,0 +1,24 @@
+{
+  "name": "Shinebringer click Play Showcase",
+  "steam_root": "D:/SteamLibrary",
+  "executable_name": "SwishAndFlick/Binaries/Win64/SwishAndFlickDemo.exe",
+  "timeout": 60,
+  "capture_delay": 3,
+  "capture_poll_seconds": 12,
+  "poll_interval": 0.5,
+  "monitor_index": 1,
+  "actions": [
+    {"action": "wait", "seconds": 4},
+    {"action": "click", "x": 960, "y": 640},
+    {"action": "wait", "seconds": 8}
+  ],
+  "assertions": [
+    {
+      "name": "showcase gameplay visible (not menu)",
+      "check": "color_detected",
+      "color": [70, 67, 65],
+      "tolerance": 45
+    }
+  ],
+  "screenshot_dir": "screenshots/shinebringer_click"
+}

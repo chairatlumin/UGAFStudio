@@ -1,0 +1,36 @@
+{
+  "53dcab9eb51d99b0": {
+    "path": "C:\\Users\\Admin\\UGAFStudio\\data\\comfyui\\workflows\\comfyui_sdxl_image_review_api.json",
+    "sha256": "2163c844105e207e4a6e1b75a20ee8332bd4da7d0ac2132daa552a5a43b9999d",
+    "node_count": 8,
+    "node_classes": [
+      "CLIPTextEncode",
+      "CheckpointLoaderSimple",
+      "KSampler",
+      "LoadImage",
+      "SaveImage",
+      "VAEDecode",
+      "VAEEncode"
+    ],
+    "workflow_id": "53dcab9eb51d99b0",
+    "purpose": "visual_review",
+    "registered_at_utc": "2026-10-23T19:09:43.090284+00:00"
+  },
+  "745093461f6fc648": {
+    "path": "C:\\Users\\Admin\\UGAFStudio\\qa_framework\\workflows\\ugaf_ta_optimize_mockup_api.json",
+    "sha256": "81050476f73d55bd64555472e23b523596cc8e43ddeab3a2baa57deabc32821f",
+    "node_count": 8,
+    "node_classes": [
+      "CLIPTextEncode",
+      "CheckpointLoaderSimple",
+      "KSampler",
+      "LoadImage",
+      "SaveImage",
+      "VAEDecode",
+      "VAEEncode"
+    ],
+    "workflow_id": "745093461f6fc648",
+    "purpose": "ui_mockup",
+    "registered_at_utc": "2026-11-04T17:27:29.691538+00:00"
+  }
+}

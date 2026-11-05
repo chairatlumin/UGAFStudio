@@ -2,22 +2,15 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Protocol, runtime_checkable
-
-
-@runtime_checkable
-class GameRunnerProtocol(Protocol):
-    def run_all(self) -> list[dict]: ...
 
 
 @dataclass
 class StatisticalTestRunner:
-    """Run game QA scenarios N times and assert pass rate with confidence."""
     runs: int = 10
     pass_threshold: float = 0.8
     confidence: float = 0.95
 
-    def run(self, game_runner: GameRunnerProtocol) -> dict:
+    def run(self, game_runner) -> dict:
         successes = 0
         total = 0
         for _ in range(self.runs):
@@ -38,7 +31,6 @@ class StatisticalTestRunner:
         }
 
     def _confidence_interval(self, p: float, n: int) -> tuple[float, float]:
-        """Wilson score interval for binomial proportion."""
         if n == 0:
             return (0.0, 1.0)
         z = 1.96 if self.confidence >= 0.95 else 1.645

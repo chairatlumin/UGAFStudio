@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from PySide6.QtWidgets import (
     QMainWindow,
     QTabWidget,
@@ -12,12 +10,19 @@ from PySide6.QtWidgets import (
 from app.capture.monitor import MonitorInfo
 from app.controllers.capture_controller import CaptureController
 from app.controllers.qa_controller import QAController
+from app.core.paths import writable_path
 from app.gui.style import STYLE
 from app.gui.widgets.dashboard_widget import DashboardWidget
+from app.gui.widgets.health_widget import HealthWidget
 from app.gui.widgets.logger_widget import LoggerWidget
 from app.gui.widgets.preview_widget import PreviewWidget
+from app.gui.widgets.qa_command_center_widget import QACommandCenterWidget
+from app.gui.widgets.qa_workbench_widget import QAWorkbenchWidget
 from app.gui.widgets.region_selector import RegionSelector
 from app.gui.widgets.status_widget import StatusWidget
+from app.gui.widgets.story_timeline_widget import StoryTimelineWidget
+from app.gui.widgets.studio_framework_widget import StudioFrameworkWidget
+from app.gui.widgets.ta_optimize_widget import TAOptimizeWidget
 from app.qa.test_case import TestRunner
 
 
@@ -34,6 +39,12 @@ class MainWindow(QMainWindow):
         self.preview_widget = PreviewWidget()
         self.status_widget = StatusWidget()
         self.dashboard_widget = DashboardWidget()
+        self.health_widget = HealthWidget()
+        self.qa_command_center_widget = QACommandCenterWidget()
+        self.qa_workbench_widget = QAWorkbenchWidget()
+        self.story_timeline_widget = StoryTimelineWidget()
+        self.studio_framework_widget = StudioFrameworkWidget()
+        self.ta_optimize_widget = TAOptimizeWidget()
         self.logger_widget = LoggerWidget()
 
         self._selector: RegionSelector | None = None
@@ -61,6 +72,7 @@ class MainWindow(QMainWindow):
         central.setLayout(layout)
 
         tabs = QTabWidget()
+        self.tabs = tabs
 
         preview_page = QWidget()
         preview_layout = QVBoxLayout()
@@ -71,9 +83,21 @@ class MainWindow(QMainWindow):
 
         tabs.addTab(preview_page, "Preview")
         tabs.addTab(self.dashboard_widget, "Dashboard")
+        tabs.addTab(self.health_widget, "System Health")
+        tabs.addTab(self.qa_command_center_widget, "QA Command Center")
+        tabs.addTab(self.qa_workbench_widget, "เริ่มทดสอบ")
+        tabs.addTab(self.story_timeline_widget, "Story / Patch Note")
+        tabs.addTab(self.studio_framework_widget, "Studio Framework")
+        tabs.addTab(self.ta_optimize_widget, "TA Optimize")
+        tabs.currentChanged.connect(lambda _index: self.story_timeline_widget.refresh_evidence())
 
         layout.addWidget(tabs)
         layout.addWidget(self.logger_widget)
+
+    def show_workbench(self) -> None:
+        """Focus the QA Workbench tab (used by ``--qa-workbench`` entry)."""
+        self.qa_workbench_widget.select_profile("highschoolblood-demo")
+        self.tabs.setCurrentWidget(self.qa_workbench_widget)
 
     def _build_menu(self) -> None:
         """Build application menus."""
@@ -115,5 +139,5 @@ class MainWindow(QMainWindow):
         summary = TestRunner.summary(results)
         self.logger_widget.info(f"Demo suite complete: {summary}")
 
-        report = self.qa_controller.generate_report(results, Path("reports"))
+        report = self.qa_controller.generate_report(results, writable_path("reports"))
         self.logger_widget.info(f"Report saved: {report}")

@@ -9,7 +9,6 @@ Provides:
 
 from __future__ import annotations
 
-import os
 import threading
 import time
 from contextlib import contextmanager

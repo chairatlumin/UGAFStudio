@@ -1,0 +1,21 @@
+{
+  "timeout": 30.0,
+  "capture_delay": 2.0,
+  "executable_name": "AgentVeil-Win64-Shipping.exe",
+  "monitor_index": 0,
+  "screenshot_dir": "screenshots",
+  "assertions": [
+    {
+      "name": "title text readable after startup",
+      "check": "ocr_contains",
+      "text": "Veil"
+    },
+    {
+      "name": "menu background color present",
+      "check": "color_detected",
+      "color": [30, 30, 30],
+      "tolerance": 25
+    }
+  ]
+}
+

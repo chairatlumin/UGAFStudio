@@ -93,3 +93,7 @@ class CaptureService:
                 return monitor
 
         return self._monitor
+
+    def close(self) -> None:
+        """Release the MSS operating-system capture resources."""
+        self._mss.close()

@@ -1,0 +1,19 @@
+{
+  "timeout": 60.0,
+  "capture_delay": 3.0,
+  "capture_poll_seconds": 10.0,
+  "poll_interval": 0.5,
+  "monitor_index": 0,
+  "screenshot_dir": "screenshots/starter",
+  "actions": [
+    {"action": "wait", "seconds": 2.0}
+  ],
+  "assertions": [
+    {
+      "name": "REPLACE: expected first-screen label is visible",
+      "check": "ocr_contains",
+      "text": "REPLACE_WITH_STABLE_GAME_TEXT",
+      "preprocessing": "ui"
+    }
+  ]
+}

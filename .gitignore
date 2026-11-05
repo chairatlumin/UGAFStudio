@@ -35,6 +35,27 @@ logs/
 # App artifacts
 screenshots/
 reports/
+data/qa_profiles/
+data/*.sqlite3
+data/*.sqlite3-shm
+data/*.sqlite3-wal
+qa_framework/testcases/local_cases.json
+
+# Generated caches / outputs
+graphify-out/
+.pytest-tmp/
+*.egg-info/
+.ai/**/*.db
+.ai/**/*.jsonl
+
+# Local scratch / diagnostics
+*.bak
+*.bak[0-9]*
+diag_shine*.txt
+pytest_output.txt
+ion)*
+nul
+unused
 
 # OS
 .DS_Store

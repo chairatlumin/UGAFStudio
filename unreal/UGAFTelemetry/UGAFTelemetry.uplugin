@@ -1,0 +1,13 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "0.1.0",
+  "FriendlyName": "UGAF Telemetry",
+  "Description": "Optional local performance samples for UGAF Studio TA Optimize.",
+  "Category": "Testing",
+  "CanContainContent": false,
+  "EnabledByDefault": false,
+  "Modules": [
+    { "Name": "UGAFTelemetry", "Type": "Runtime", "LoadingPhase": "Default" }
+  ]
+}

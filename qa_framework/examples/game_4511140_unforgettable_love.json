@@ -1,0 +1,21 @@
+{
+  "timeout": 30.0,
+  "capture_delay": 2.0,
+  "executable_name": "Unforgettable_Love-Win64-Shipping.exe",
+  "monitor_index": 0,
+  "screenshot_dir": "screenshots",
+  "assertions": [
+    {
+      "name": "main menu text readable after startup",
+      "check": "ocr_contains",
+      "text": "Love"
+    },
+    {
+      "name": "UI highlight color present after startup",
+      "check": "color_detected",
+      "color": [200, 80, 120],
+      "tolerance": 40
+    }
+  ]
+}
+

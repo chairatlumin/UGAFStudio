@@ -1,0 +1,21 @@
+{
+  "timeout": 30.0,
+  "capture_delay": 2.0,
+  "executable_name": "SwishAndFlickDemo-Win64-Shipping.exe",
+  "monitor_index": 0,
+  "screenshot_dir": "screenshots",
+  "assertions": [
+    {
+      "name": "main menu renders readable text",
+      "check": "ocr_contains",
+      "text": "Play"
+    },
+    {
+      "name": "UI accent color present after startup",
+      "check": "color_detected",
+      "color": [60, 120, 200],
+      "tolerance": 40
+    }
+  ]
+}
+

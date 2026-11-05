@@ -5,12 +5,10 @@ from dataclasses import dataclass, field
 
 
 def _perceptual_hash(data: str) -> str:
-    """Simple perceptual hash: returns first 32 chars of sha256."""
     return hashlib.sha256(data.encode() if isinstance(data, str) else data).hexdigest()[:32]
 
 
 def _similarity(hash_a: str, hash_b: str) -> float:
-    """Compute hex-string similarity (0.0 to 1.0) via character overlap."""
     if len(hash_a) != len(hash_b):
         return 0.0
     matches = sum(1 for a, b in zip(hash_a, hash_b) if a == b)
@@ -19,7 +17,6 @@ def _similarity(hash_a: str, hash_b: str) -> float:
 
 @dataclass
 class PerceptionDriftDetector:
-    """Detects when game perception references drift (e.g., game update)."""
     threshold: float = 0.85
     _references: dict[str, str] = field(default_factory=dict)
     _drift_counts: dict[str, int] = field(default_factory=dict)

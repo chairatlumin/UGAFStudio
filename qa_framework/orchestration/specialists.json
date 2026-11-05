@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "team": "UGAF Game QA Orchestra",
+  "supervisor": "ChatGPT/Codex",
+  "orchestrator": "fmv-qa-orchestrator",
+  "roles": [
+    {"id":"qa-intake","agent":"specialists/qa-intake","name":"QA Intake & Build Control","phase":"intake","mode":"parallel","input":["game profile","patch notes","testcase source","build metadata"],"output":"scope-and-build.md","writes":false},
+    {"id":"test-design","agent":"specialists/test-design","name":"Test Design & Coverage","phase":"design","mode":"parallel","input":["approved scope","existing cases","story flow"],"output":"coverage-and-cases.md","writes":false},
+    {"id":"localization-qa","agent":"specialists/localization-qa","name":"Localization QA","phase":"design","mode":"parallel","input":["localization exports","supported locales","scene map"],"output":"localization-risks.md","writes":false},
+    {"id":"fmv-playback-qa","agent":"specialists/fmv-playback-qa","name":"FMV Playback & Branch QA","phase":"design","mode":"parallel","input":["flow graph","playback requirements","known defects"],"output":"playback-risk-matrix.md","writes":false},
+    {"id":"visual-qa","agent":"specialists/visual-qa","name":"Visual & UI QA","phase":"design","mode":"parallel","input":["screenshots or capture","resolution matrix","UI requirements"],"output":"visual-review.md","writes":false},
+    {"id":"audio-qa","agent":"specialists/audio-qa","name":"Audio & A/V Sync QA","phase":"design","mode":"parallel","input":["audio capture","dialogue references","sync tolerance"],"output":"audio-review.md","writes":false},
+    {"id":"automation-engineer","agent":"specialists/automation-engineer","name":"Automation & Harness Engineer","phase":"automation-design","mode":"after-design","input":["approved test cases","game profile","available adapters"],"output":"automation-readiness.md","writes":false},
+    {"id":"evidence-auditor","agent":"specialists/evidence-auditor","name":"Evidence & Defect Auditor","phase":"audit","mode":"after-execution","input":["manifest","results","trace","evidence index"],"output":"evidence-audit.md","writes":false},
+    {"id":"release-coordinator","agent":"specialists/release-coordinator","name":"Release Gate & Handoff","phase":"release-gate","mode":"after-audit","input":["approved scope","audited results","open risks"],"output":"release-handoff.md","writes":false}
+  ],
+  "required_statuses": ["PASS", "FAIL", "BLOCKED", "NEEDS_REVIEW", "NOT_RUN", "NOT_IN_BUILD"],
+  "required_run_artifacts": ["run_manifest.json", "results.json", "results.csv", "evidence/index.json", "trace.jsonl", "report.html"],
+  "safety": {
+    "source_documents_read_only": true,
+    "no_eula_or_privacy_acceptance": true,
+    "no_save_reset_or_delete": true,
+    "no_unspecified_choice": true,
+    "one_game_input_controller": true,
+    "no_pass_without_assertion_and_evidence": true,
+    "stop_on_unknown_state": true
+  }
+}

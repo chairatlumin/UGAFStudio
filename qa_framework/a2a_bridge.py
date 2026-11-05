@@ -5,10 +5,15 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, Generator, NamedTuple, Optional
+from typing import TYPE_CHECKING, Any, Generator, NamedTuple, Optional
 
 from qa_framework.adversarial_vision import AdversarialVisionGuard
 from qa_framework.circuit_breaker import CircuitBreaker
+from qa_framework.cnp_broker import CNPBroker
+from qa_framework.fleet_monitor import FleetMonitor, FleetRecorder
+from qa_framework.handoff import HandoffManager
+from qa_framework.lesson_bus import LessonBus
+from qa_framework.lesson_store import LessonStore
 from qa_framework.memory_compactor import MemoryCompactor
 from qa_framework.reliability_tracker import DispatchOutcome, ReliabilityTracker
 from qa_framework.tool_result_validator import ToolResultValidator
@@ -80,6 +85,7 @@ class A2AProtocolBridge:
         version: str = "1.0.0",
         url: str = "http://localhost:4096",
         scanner: "IntentScanner | None" = None,
+        lesson_db_path: str = ":memory:",
     ) -> None:
         self.agent_name = agent_name
         self.version = version
@@ -92,6 +98,13 @@ class A2AProtocolBridge:
         self._reliability = ReliabilityTracker()
         self._result_validator = ToolResultValidator()
         self._memory = MemoryCompactor()
+        self._fleet = FleetRecorder()
+        # ponytail: :memory: keeps tests hermetic; pass a file path for persistence.
+        self.lesson_store = LessonStore(db_path=lesson_db_path)
+        self.lesson_bus = LessonBus(self.lesson_store)
+        # Contract Net Protocol bidding + structured handoff
+        self._cnp_broker = CNPBroker()
+        self._handoff_mgr = HandoffManager(self._cnp_broker)
 
     def agent_card(self) -> dict:
         return {
@@ -232,6 +245,17 @@ class A2AProtocolBridge:
                 model=model,
                 outcome=outcome,
                 duration_ms=duration_ms,
+                confidence=0.8 if result.returncode == 0 else 0.2,
+            )
+
+            # Record fleet-wide observability
+            self._fleet.record_dispatch(
+                agent_id=agent_id,
+                task_type="opencode_dispatch",
+                model=model,
+                success=result.returncode == 0,
+                duration_ms=duration_ms,
+                cost_usd=0.0,
                 confidence=0.8 if result.returncode == 0 else 0.2,
             )
 
@@ -385,6 +409,15 @@ class A2AProtocolBridge:
         """Return reliability metrics for an agent."""
         return self._reliability.get_metrics(agent_id).__dict__
 
+    def get_fleet_metrics(self, agent_id: str) -> dict[str, object]:
+        """Return fleet metrics for a single agent."""
+        return self._fleet.get_agent_metrics(agent_id)
+
+    def get_fleet_summary(self) -> dict[str, object]:
+        """Return fleet-wide summary from FleetMonitor."""
+        mon = FleetMonitor(self._fleet)
+        return mon.get_fleet_summary()
+
     def sanitize_tool_output(self, text: str) -> str:
         """Sanitize tool output text (control chars, length bound)."""
         return self._result_validator.sanitize_text(text)
@@ -413,3 +446,58 @@ class A2AProtocolBridge:
     def release_workspace_lock(self, agent_id: str, file_path: str) -> None:
         """Release a workspace file lock."""
         self._locker.release_lock(agent_id, file_path)
+
+    def get_relevant_lessons(
+        self, query: str, tags: list[str] | None = None, limit: int = 5
+    ) -> list[dict[str, Any]]:
+        """Return past lessons similar to query (shared agent memory)."""
+        return self.lesson_store.find_similar(query, limit=limit, tags=tags)
+
+    def publish_lesson(
+        self,
+        agent_id: str,
+        pattern: str,
+        solution: str,
+        tags: list[str],
+        confidence: float = 1.0,
+    ) -> int:
+        """Publish a resolved lesson to all subscribed agents."""
+        return self.lesson_bus.publish(agent_id, pattern, solution, tags, confidence)
+
+    # Contract Net Protocol (CNP) methods
+    def announce_task_for_bid(
+        self,
+        task_id: str,
+        description: str,
+        tags: list[str],
+        min_confidence: float = 0.5,
+    ) -> None:
+        """Announce a task to the agent fleet for bidding."""
+        self._cnp_broker.announce_task(task_id, description, tags, min_confidence)
+
+    def submit_bid(self, bid: Any) -> None:
+        """Submit a bid for a task."""
+        self._cnp_broker.submit_bid(bid)
+
+    def award_and_dispatch(
+        self,
+        task_id: str,
+        model: str = "opencode/nemotron-3.5-lightning-free",
+    ) -> Any:
+        """Award task to highest bidder and dispatch. Returns the winning BidEnvelope."""
+        winner = self._cnp_broker.award_task(task_id)
+        if winner is None:
+            return None
+        # Record handoff attempt
+        self._cnp_broker.record_handoff(task_id, winner.agent_id, success=False)
+        # Dispatch via existing method
+        self.dispatch_to_opencode(task_id, model=model, agent_id=winner.agent_id)
+        return winner
+
+    def escalate_failed_handoff(self, task_id: str, reason: str) -> bool:
+        """Re-announce task after failed handoff (with escalation)."""
+        return self._handoff_mgr.escalate(task_id, reason)
+
+    def get_agent_reputation(self, agent_id: str) -> float:
+        """Get reputation score for an agent (0.0-1.0)."""
+        return self._cnp_broker.get_reputation(agent_id)

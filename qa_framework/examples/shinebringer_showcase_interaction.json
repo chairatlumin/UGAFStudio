@@ -1,0 +1,34 @@
+{
+  "name": "Shinebringer showcase flow — smoke interact",
+  "steam_root": "D:/SteamLibrary",
+  "executable_name": "SwishAndFlick/Binaries/Win64/SwishAndFlickDemo.exe",
+  "timeout": 60,
+  "capture_delay": 5,
+  "actions": [
+    {"action": "wait", "seconds": 4},
+    {"action": "press", "key": "enter"},
+    {"action": "wait", "seconds": 4},
+    {"action": "press", "key": "enter"},
+    {"action": "wait", "seconds": 6},
+    {"action": "move", "direction": "forward", "seconds": 2},
+    {"action": "look", "dx": 120, "dy": 0},
+    {"action": "wait", "seconds": 1},
+    {"action": "move", "direction": "right", "seconds": 1},
+    {"action": "interact", "key": "e"},
+    {"action": "wait", "seconds": 2},
+    {"action": "look", "dx": -120, "dy": 0},
+    {"action": "move", "direction": "back", "seconds": 1},
+    {"action": "wait", "seconds": 2},
+    {"action": "press", "key": "escape"},
+    {"action": "wait", "seconds": 2}
+  ],
+  "assertions": [
+    {
+      "name": "gameplay frame is visible after showcase interact",
+      "check": "color_detected",
+      "color": [70, 67, 65],
+      "tolerance": 45
+    }
+  ],
+  "screenshot_dir": "screenshots/shinebringer_showcase"
+}

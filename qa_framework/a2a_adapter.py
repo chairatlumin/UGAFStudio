@@ -850,3 +850,94 @@ class DispatchEvaluator:
 
         score = DispatchScore(necessary=necessary, complete=complete, efficient=efficient)
         return score.to_dict()
+
+
+@dataclass
+class DispatchMemory:
+    """Time-weighted memory of A2A dispatch outcomes for adaptive routing."""
+
+    half_life_days: float = 7.0
+    storage_path: Optional[str] = None
+    _records: list[dict] = field(default_factory=list)
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
+
+    def __post_init__(self) -> None:
+        if self.storage_path and os.path.exists(self.storage_path):
+            self._load()
+
+    def record(
+        self,
+        agent_id: str,
+        task_type: str,
+        success: bool,
+        score: float = 3.0,
+        timestamp: Optional[str] = None,
+    ) -> None:
+        with self._lock:
+            self._records.append({
+                "agent_id": agent_id,
+                "task_type": task_type,
+                "success": success,
+                "score": score,
+                "timestamp": timestamp or datetime.now(timezone.utc).isoformat(),
+            })
+            if self.storage_path:
+                self._save()
+
+    def get_records(self, agent_id: str, task_type: str) -> list[dict]:
+        with self._lock:
+            return [
+                r for r in self._records
+                if r["agent_id"] == agent_id and r["task_type"] == task_type
+            ]
+
+    def recommend(self, task_type: str, candidates: list[str]) -> list[dict]:
+        """Return candidates ranked by weighted success score."""
+        now = datetime.now(timezone.utc)
+        half_life_seconds = self.half_life_days * 86400
+
+        results = []
+        for agent_id in candidates:
+            records = self.get_records(agent_id, task_type)
+            if not records:
+                continue
+
+            weighted_sum = 0.0
+            weight_total = 0.0
+            for r in records:
+                try:
+                    ts = datetime.fromisoformat(r["timestamp"])
+                except (ValueError, TypeError):
+                    ts = now
+                age_seconds = max((now - ts).total_seconds(), 0)
+                if half_life_seconds > 0:
+                    weight = 2 ** (-age_seconds / half_life_seconds)
+                else:
+                    weight = 1.0
+                weighted_sum += r["score"] * weight
+                weight_total += weight
+
+            if weight_total > 0:
+                results.append({
+                    "agent_id": agent_id,
+                    "weighted_score": round(weighted_sum / weight_total, 3),
+                    "record_count": len(records),
+                })
+
+        results.sort(key=lambda x: x["weighted_score"], reverse=True)  # type: ignore[arg-type,return-value]
+        return results
+
+    def _save(self) -> None:
+        if not self.storage_path:
+            return
+        with open(self.storage_path, "w") as f:
+            json.dump(self._records, f, indent=2)
+
+    def _load(self) -> None:
+        if not self.storage_path:
+            return
+        try:
+            with open(self.storage_path) as f:
+                self._records = json.load(f)
+        except (json.JSONDecodeError, IOError):
+            self._records = []

@@ -1,0 +1,17 @@
+{
+  "steam_root": "D:\\SteamLibrary",
+  "games": [
+    {
+      "app_id": 4077460,
+      "suite": "game_4077460_shinebringers.json"
+    },
+    {
+      "app_id": 4307180,
+      "suite": "game_4307180_agentveil.json"
+    },
+    {
+      "app_id": 4511140,
+      "suite": "game_4511140_unforgettable_love.json"
+    }
+  ]
+}

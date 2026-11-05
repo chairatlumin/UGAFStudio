@@ -1,0 +1,17 @@
+{
+  "timeout": 90.0,
+  "capture_delay": 5.0,
+  "capture_poll_seconds": 15.0,
+  "poll_interval": 0.5,
+  "executable_name": "HighSchoolBlood.exe",
+  "monitor_index": 0,
+  "screenshot_dir": "screenshots/highschool_blood",
+  "assertions": [
+    {
+      "name": "gameplay frame is not black after launch",
+      "check": "frame_not_black",
+      "brightness_threshold": 8,
+      "min_visible_ratio": 0.02
+    }
+  ]
+}

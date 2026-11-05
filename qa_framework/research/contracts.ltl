@@ -1,0 +1,31 @@
+# Research Workflow LTLf Contracts
+
+contract brief_before_dispatch {
+    assumption: true
+    guarantee: G(dispatch -> F brief_exists)
+}
+
+contract validation_before_report {
+    assumption: true
+    guarantee: G(report -> F validation_passed)
+}
+
+contract research_before_dispatch {
+    assumption: true
+    guarantee: G(dispatch -> F research_brief_exists)
+}
+
+contract report_after_validation {
+    assumption: true
+    guarantee: G(validation_passed -> F report)
+}
+
+contract no_report_without_validation {
+    assumption: true
+    guarantee: G(!validation_passed -> !report)
+}
+
+contract ledger_persistence {
+    assumption: true
+    guarantee: G(step_complete -> F ledger_saved)
+}

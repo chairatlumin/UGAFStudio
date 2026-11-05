@@ -1,0 +1,21 @@
+{
+  "timeout": 30.0,
+  "capture_delay": 2.0,
+  "executable_name": "SwishAndFlickDemo-Win64-Shipping.exe",
+  "monitor_index": 0,
+  "screenshot_dir": "screenshots",
+  "assertions": [
+    {
+      "name": "UI accent color present after startup",
+      "check": "color_detected",
+      "color": [65, 67, 70],
+      "tolerance": 30
+    },
+    {
+      "name": "Secondary menu color present",
+      "check": "color_detected",
+      "color": [65, 58, 52],
+      "tolerance": 30
+    }
+  ]
+}

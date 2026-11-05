@@ -1,0 +1,797 @@
+[0m
+> build · hy3-free
+[0m
+[0m→ [0mRead qa_framework/gameplay/assertions.py
+[0m→ [0mRead qa_framework/gameplay/suite.py
+[0m→ [0mRead app/vision/ocr.py
+I'll start by exploring the relevant existing code to understand the assertion engine and suite loading.
+[0m→ [0mRead qa_framework/gameplay/runner.py
+[0m→ [0mRead qa_framework/examples/game_4307180_agentveil_ocr.json
+Let me look at the runner config and an example OCR suite to understand `app_id` and `executable_name` fields.
+[0m✱ [0mGlob "qa_framework/examples/*_ocr.json"[90m 4 matches[0m
+[0m→ [0mRead qa_framework/examples/gameplay_combined_ocr.json
+[0m→ [0mRead qa_framework/examples/game_4077460_shinebringers_ocr.json
+[0m→ [0mRead qa_framework/examples/game_4511140_unforgettable_love_ocr.json
+Now let me check the screenshots directory and verify OCR availability.
+[0m
+[0m$ [0mecho "[graphify] knowledge graph at graphify-out/. For focused questions, run graphify query with your question (scoped subgraph, usually much smaller than GRAPH_REPORT.md) instead of grepping raw files. Read GRAPH_REPORT.md only for broad architecture context." ; cd C:/Users/Admin/UGAFStudio && ls screenshots && echo "---swishflow---" && ls screenshots/swishflow 2>nul; echo "---tesseract---"; "C:/Program Files/Tesseract-OCR/tesseract.exe" --version 2>&1 | head -1; python -c "import pytesseract; print('pytesseract ok')" 2>&1 | head -1
+[graphify] knowledge graph at graphify-out/. For focused questions, run graphify query with your question (scoped subgraph, usually much smaller than GRAPH_REPORT.md) instead of grepping raw files. Read GRAPH_REPORT.md only for broad architecture context.
+after_card_click.png
+after_e.png
+after_entry.png
+after_scroll.png
+after_vate_click.png
+after_walk1.png
+after_walk2.png
+after_walk3.png
+approach.png
+av_after_agent.png
+av_after_click.png
+av_after_create.png
+av_after_enter.png
+av_after_enter_sel.png
+av_after_fg_esc.png
+av_after_w.png
+av_avg.png
+av_avg2.png
+av_avg3.png
+av_before_tutorial.png
+av_check.png
+av_desk.png
+av_enter.png
+av_enter2.png
+av_esc.png
+av_esc2.png
+av_esc3.png
+av_fg.png
+av_final_state.png
+av_focus_enter.png
+av_full.png
+av_gameonly.png
+av_k0.png
+av_k1.png
+av_k2.png
+av_k3.png
+av_k4.png
+av_k5.png
+av_loading.png
+av_menu_01.png
+av_menu_02.png
+av_menu_clean.png
+av_menu_crop.png
+av_menu_zoom.png
+av_menuhit.png
+av_now.png
+av_nowstate.png
+av_pw.png
+av_state_final.png
+av_state_late.png
+av_state_now.png
+av_state_x.png
+av_state0.png
+av_state1.png
+av_tut.png
+av_tut_entered.png
+av_tut_scene.png
+av_tut2.png
+av_tutorial_entered.png
+av_win.png
+av_zoom_A.png
+av_zoom_B.png
+card1_click.png
+entry_click.png
+entry_dblclick.png
+gameonly_now.png
+gp_a.png
+gp_dn_a.png
+gp_down.png
+gp_nav.png
+gp_stick_a.png
+ingame_now.png
+kb_enter_mission.png
+left_mission_click.png
+live
+lobby_avg.png
+lobby_fresh.png
+lobby_fresh2.png
+lobby_now.png
+lobbyflow
+m0.png
+m1.png
+m2.png
+m3.png
+m4.png
+m5.png
+manual1.png
+map_screen.png
+mid_clicked.png
+mid_mission.png
+mission_info.png
+mission_row_click.png
+mission_select.png
+ms_after_right.png
+ms_avg.png
+ms_fresh.png
+ms_now.png
+n0.png
+now_state.png
+pw_0.png
+right_mission_click.png
+seq0.png
+seq1.png
+seq2.png
+seq3.png
+seq4.png
+seq5.png
+st1_full.png
+st1_menu.png
+st10_dark.png
+st11.png
+st12_lobby.png
+st13.png
+st15.png
+st16_full.png
+st17_after_enter.png
+st18.png
+st19.png
+st2_after_createlobby.png
+st2_kb_createlobby.png
+st20.png
+st21.png
+st22.png
+st23.png
+st24.png
+st25.png
+st26.png
+st27.png
+st28_avg.png
+st29_avg.png
+st3_after_enter.png
+st30.png
+st31_join.png
+st4_state.png
+st5.png
+st6_space.png
+st7_dpi.png
+st8_after_dpiclick.png
+st9_sendinput.png
+stes_click.png
+swishflow
+timer_click.png
+travel.png
+walk_end.png
+walk0.png
+---swishflow---
+current_state.png
+debug_pw.png
+find_Play_Showcase.png
+live_menu.png
+probe_1787656913.png
+probe_1787663546.png
+s01_menu.png
+s02_menu2.png
+s03_mss.png
+s04_fg_capture.png
+s05_settled.png
+s06_inst0.png
+s06_inst1.png
+s06_inst2.png
+s07_after_enter.png
+s08_client.png
+s09_screen.png
+s10_after_esc.png
+s11_after_play.png
+sw_01_spawn.png
+sw_02_after_e.png
+sw_03_craft.png
+sw_04_craft_hi.png
+sw_05_right.png
+sw_06_left.png
+sw_07_adapt.png
+sw_08_btn.png
+sw_09_below_output.png
+sw_10_rightpanel.png
+sw_12_blob_a.png
+sw_12_blob_b.png
+sw_13_now.png
+sw_14_item1.png
+sw_15.png
+sw_16_after_yellow.png
+sw_17.png
+sw_18_out.png
+sw_18_req.png
+sw_19_outbtn.png
+sw_20_after_craft.png
+sw_21_crafted.png
+sw_22_walking.png
+sw_24_state.png
+sw_25_afterE_0.png
+sw_25_afterE_1.png
+sw_25_afterE_2.png
+sw_28_now.png
+sw_29_after_ib.png
+sw_30.png
+sw_31_dead.png
+vision_read.png
+---tesseract---
+tesseract v5.4.0.20240606
+Traceback (most recent call last):
+[0m
+pytesseract import failed. Let me check.
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && python -c "import pytesseract; print('ok')" 2>&1 | tail -3
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'pytesseract'
+[0m
+pytesseract (Python wrapper) isn't installed, so OCR would report "unavailable". Let me install it so the validator can actually run OCR.
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && pip install pytesseract 2>&1 | tail -5
+Requirement already satisfied: pytesseract in C:\Users\Admin\AppData\Roaming\Python\Python314\site-packages (0.3.13)
+Requirement already satisfied: packaging>=21.3 in C:\Users\Admin\AppData\Roaming\Python\Python314\site-packages (from pytesseract) (26.2)
+Requirement already satisfied: Pillow>=8.0.0 in C:\Users\Admin\AppData\Roaming\Python\Python314\site-packages (from pytesseract) (12.3.0)
+[0m
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && C:/Python314/python.exe -c "import pytesseract, PIL; print('ok', pytesseract.__version__)" 2>&1 | tail -5
+ok 0.3.13
+[0m
+[0m← [0mWrite scripts/validate_ocr_suite.py
+Wrote file successfully.
+[0m
+`C:/Python314/python.exe` has pytesseract. Now I'll write the validator script.
+[0m← [0mWrite tests/test_validate_ocr_suite.py
+Wrote file successfully.
+[0m
+Now the tests:
+Let me check whether `scripts` is already importable as a namespace package (no `__init__.py`).
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && ls scripts/__init__.py 2>&1; echo "---"; grep -rl "scripts\." tests 2>/dev/null | head; echo "--- grep imports ---"; grep -rn "from scripts" --include=*.py . 2>/dev/null | head
+ls: cannot access 'scripts/__init__.py': No such file or directory
+---
+tests/test_capture_health.py
+tests/test_game_profiles.py
+tests/test_live_alternative.py
+tests/test_moa_live_wiring.py
+tests/test_session_report.py
+tests/test_validate_ocr_suite.py
+tests/__pycache__/test_capture_health.cpython-314-pytest-9.1.1.pyc
+tests/__pycache__/test_game_profiles.cpython-314-pytest-9.1.1.pyc
+tests/__pycache__/test_live_alternative.cpython-314-pytest-9.1.1.pyc
+tests/__pycache__/test_moa_live_wiring.cpython-314-pytest-9.1.1.pyc
+--- grep imports ---
+./scripts/bench_brain.py:33:from scripts.live_gameplay_agent import (
+./scripts/live_gameplay_agent.py:27:from scripts.session_report import build_report as _build_session_report
+./scripts/moa_live_integrated.py:31:from scripts.live_gameplay_agent import ALLOWED_ACTIONS, LiveGameplayAgent
+./tests/test_capture_health.py:13:from scripts.live_gameplay_agent import LiveGameplayAgent, frame_health
+./tests/test_game_profiles.py:11:from scripts.live_gameplay_agent import LiveGameplayAgent
+./tests/test_live_alternative.py:12:from scripts.live_gameplay_agent import LiveGameplayAgent
+./tests/test_moa_live_wiring.py:13:from scripts.live_gameplay_agent import LiveGameplayAgent
+./tests/test_session_report.py:8:from scripts.session_report import build_report
+./tests/test_validate_ocr_suite.py:11:from scripts.validate_ocr_suite import validate_suite
+[0m
+Other tests already import from `scripts`, so namespace packages work. Now run the quality gates.
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff check scripts/validate_ocr_suite.py tests/test_validate_ocr_suite.py 2>&1 | tail -20
+F401 [*] `pytest` imported but unused
+  --> tests\test_validate_ocr_suite.py:9:8
+   |
+ 7 | import cv2
+ 8 | import numpy as np
+ 9 | import pytest
+   |        ^^^^^^
+10 |
+11 | from scripts.validate_ocr_suite import validate_suite
+   |
+help: Remove unused import: `pytest`
+  |
+8 | import numpy as np
+  - import pytest
+9 |
+  |
+
+Found 3 errors.
+[*] 2 fixable with the `--fix` option.
+[0m
+[0m← [0mEdit tests/test_validate_ocr_suite.py
+Index: C:\Users\Admin\UGAFStudio\tests\test_validate_ocr_suite.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\tests\test_validate_ocr_suite.py
++++ C:\Users\Admin\UGAFStudio\tests\test_validate_ocr_suite.py
+@@ -5,9 +5,8 @@
+ from pathlib import Path
+ 
+ import cv2
+ import numpy as np
+-import pytest
+ 
+ from scripts.validate_ocr_suite import validate_suite
+ 
+ _ASSETS = Path(__file__).resolve().parents[1] / "scripts"
+
+[0m
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff check scripts/validate_ocr_suite.py tests/test_validate_ocr_suite.py 2>&1 | tail -30
+F821 Undefined name `np`
+  --> scripts\validate_ocr_suite.py:41:42
+   |
+41 | def _ocr_snapshot(ocr: OCREngine, frame: np.ndarray, assertion: dict[str, Any]) -> str:
+   |                                          ^^
+42 |     """Return the OCR'd word text for the assertion's frame (best of frame)."""
+43 |     if assertion.get("check") not in _OCR_CHECKS:
+   |
+
+F401 [*] `shutil` imported but unused
+ --> tests\test_validate_ocr_suite.py:3:8
+  |
+1 | from __future__ import annotations
+2 |
+3 | import shutil
+  |        ^^^^^^
+4 | import tempfile
+5 | from pathlib import Path
+  |
+help: Remove unused import: `shutil`
+  |
+2 |
+  - import shutil
+3 | import tempfile
+  |
+
+Found 2 errors.
+[*] 1 fixable with the `--fix` option.
+[0m
+[0m← [0mEdit scripts/validate_ocr_suite.py
+Index: C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
++++ C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
+@@ -5,8 +5,9 @@
+ from pathlib import Path
+ from typing import Any
+ 
+ import cv2
++import numpy as np
+ 
+ from app.vision.ocr import OCREngine
+ from qa_framework.gameplay.assertions import (
+     AssertionResult,
+
+[0m
+[0m← [0mEdit tests/test_validate_ocr_suite.py
+Index: C:\Users\Admin\UGAFStudio\tests\test_validate_ocr_suite.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\tests\test_validate_ocr_suite.py
++++ C:\Users\Admin\UGAFStudio\tests\test_validate_ocr_suite.py
+@@ -1,7 +1,6 @@
+ from __future__ import annotations
+ 
+-import shutil
+ import tempfile
+ from pathlib import Path
+ 
+ import cv2
+
+[0m
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff check scripts/validate_ocr_suite.py tests/test_validate_ocr_suite.py && echo "=== FORMAT ===" && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff format --check scripts/validate_ocr_suite.py tests/test_validate_ocr_suite.py && echo "=== MYPY ===" && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m mypy scripts/validate_ocr_suite.py && echo "=== PYTEST ===" && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m pytest tests/test_validate_ocr_suite.py -q 2>&1 | tail -20
+All checks passed!
+=== FORMAT ===
+unformatted: File would be reformatted
+   --> scripts\validate_ocr_suite.py:113:42
+    |
+112 |             except Exception as exc:  # noqa: BLE001 - surface as crash
+    -                 result = AssertionResult(
+    -                     name=name, passed=False, message=f"error: {exc}"
+    -                 )
+113 +                 result = AssertionResult(name=name, passed=False, message=f"error: {exc}")
+114 |             record = {
+--------------------------------------------------------------------------------
+173 |     for (app_id, game), records in groups.items():
+    -         evidence = next(
+    -             (r["evidence"] for r in records if r["evidence"] != "(none)"), "(none)"
+    -         )
+174 +         evidence = next((r["evidence"] for r in records if r["evidence"] != "(none)"), "(none)")
+175 |         print(f"[{app_id}] {game}  evidence={evidence}")
+--------------------------------------------------------------------------------
+183 |                 note = "  (evidence missing)"
+    -             print(
+    -                 f"  {tag}  {r['check']}:{r['name']}{ocr_field}  "
+    -                 f"{r['message']}{note}"
+    -             )
+184 +             print(f"  {tag}  {r['check']}:{r['name']}{ocr_field}  {r['message']}{note}")
+185 |             if tag == "PASS":
+--------------------------------------------------------------------------------
+194 |         print(
+    -             f"SUMMARY: {game_pass} passed, {game_fail} failed, "
+    -             f"{game_skip} skipped (game {app_id})"
+195 +             f"SUMMARY: {game_pass} passed, {game_fail} failed, {game_skip} skipped (game {app_id})"
+196 |         )
+197 |         print()
+198 |
+    -     print(
+    -         f"TOTAL: {total_pass} passed, {total_fail} failed, {total_skip} skipped"
+    -     )
+199 +     print(f"TOTAL: {total_pass} passed, {total_fail} failed, {total_skip} skipped")
+200 |
+--------------------------------------------------------------------------------
+226 |         return 2
+    -     if any(
+    -         r["evidence"] != "(none)" and not r["passed"] for r in all_results
+    -     ):
+227 +     if any(r["evidence"] != "(none)" and not r["passed"] for r in all_results):
+228 |         # A game had evidence but every assertion failed: signal failure.
+    |
+
+unformatted: File would be reformatted
+  --> tests\test_validate_ocr_suite.py:43:28
+   |
+42 |             "name": "generated",
+   -             "assertions": [
+   -                 {"name": "shows START", "check": "ocr_word_present", "text": "START"}
+   -             ],
+43 +             "assertions": [{"name": "shows START", "check": "ocr_word_present", "text": "START"}],
+44 |         }
+--------------------------------------------------------------------------------
+58 |             "name": "generated",
+   -             "assertions": [
+   -                 {"name": "shows START", "check": "ocr_word_present", "text": "START"}
+   -             ],
+59 +             "assertions": [{"name": "shows START", "check": "ocr_word_present", "text": "START"}],
+60 |         }
+   |
+
+2 files would be reformatted
+[0m
+Let me apply ruff format.
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff format scripts/validate_ocr_suite.py tests/test_validate_ocr_suite.py && echo "=== verify ===" && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff format --check scripts/validate_ocr_suite.py tests/test_validate_ocr_suite.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m mypy scripts/validate_ocr_suite.py 2>&1 | tail -5 && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m pytest tests/test_validate_ocr_suite.py -q 2>&1 | tail -8
+2 files reformatted
+=== verify ===
+2 files already formatted
+scripts\validate_ocr_suite.py:152: error: Incompatible types in assignment (expression has type "int | None", variable has type "int")  [assignment]
+Found 1 error in 1 file (checked 1 source file)
+...                                                                      [100%]
+3 passed in 0.89s
+[0m
+[0m→ [0mRead scripts/validate_ocr_suite.py[90m [offset=140, limit=35][0m
+[0m
+[0m← [0mEdit scripts/validate_ocr_suite.py
+Index: C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
++++ C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
+@@ -148,9 +148,9 @@
+         )
+     return out
+ 
+ config = load_run_config(suite_path)
+-app_id = _app_id_from_filename(suite_path)
++app_id: int | None = _app_id_from_filename(suite_path)
+ name = config.executable_name or suite_path.stem
+ return [{"app_id": app_id, "name": name, "assertions": config.assertions}]
+ 
+ 
+
+[0m
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m mypy scripts/validate_ocr_suite.py 2>&1 | tail -5
+scripts\validate_ocr_suite.py:152: error: Name "app_id" already defined on line 139  [no-redef]
+Found 1 error in 1 file (checked 1 source file)
+[0m
+[0m→ [0mRead scripts/validate_ocr_suite.py[90m [offset=130, limit=28][0m
+[0m
+[0m← [0mEdit scripts/validate_ocr_suite.py
+Index: C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
++++ C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
+@@ -148,11 +148,11 @@
+             )
+         return out
+ 
+     config = load_run_config(suite_path)
+-    app_id: int | None = _app_id_from_filename(suite_path)
++    single_app_id: int | None = _app_id_from_filename(suite_path)
+     name = config.executable_name or suite_path.stem
+-    return [{"app_id": app_id, "name": name, "assertions": config.assertions}]
++    return [{"app_id": single_app_id, "name": name, "assertions": config.assertions}]
+ 
+ 
+ def _app_id_from_filename(path: Path) -> int | None:
+     stem = path.stem
+
+[0m
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m mypy scripts/validate_ocr_suite.py 2>&1 | tail -5 && echo "=== ruff ===" && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff check scripts/validate_ocr_suite.py tests/test_validate_ocr_suite.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff format --check scripts/validate_ocr_suite.py tests/test_validate_ocr_suite.py && echo "=== pytest ===" && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m pytest tests/test_validate_ocr_suite.py -q 2>&1 | tail -5
+Success: no issues found in 1 source file
+=== ruff ===
+All checks passed!
+2 files already formatted
+=== pytest ===
+...                                                                      [100%]
+3 passed in 0.84s
+[0m
+All quality gates pass. Now run the validator live against the real evidence for Agent Veil.
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe scripts/validate_ocr_suite.py --suite qa_framework/examples/game_4307180_agentveil_ocr.json --evidence-dir screenshots; echo "EXIT=$?"
+[4307180] AgentVeil.exe  evidence=av_after_agent.png
+  PASS  color_detected:renders non-black frame after startup  Color region 1409x736 at (127, 128)
+  FAIL  ocr_word_present:main menu shows Tutorial entry  Word 'Tutorial' not present (conf>=0.5). Saw: (none)
+  FAIL  ocr_contains:main menu shows Settings entry  OCR text did not contain 'Settings': ''
+SUMMARY: 1 passed, 2 failed, 0 skipped (game 4307180)
+
+TOTAL: 1 passed, 2 failed, 0 skipped
+EXIT=0
+[0m
+OCR returned empty — let me debug the OCR on the known-good evidence frames directly.
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -c "
+from app.vision.ocr import OCREngine
+import cv2
+o=OCREngine()
+print('avail', o.available())
+for f in ['screenshots/av_menu_clean.png','screenshots/av_avg.png','screenshots/swishflow/sw_30.png']:
+    fr=cv2.imread(f)
+    print('==',f, fr.shape if fr is not None else 'NONE')
+    words=o.read_words(fr, psm=7, preprocessing='ui', confidence_threshold=0.0)
+    print('words:', ' | '.join(w.text for w in words[:20]))
+    print('read:', repr(o.read(fr, psm=6, preprocessing='ui')[:120]))
+"
+avail True
+== screenshots/av_menu_clean.png (864, 1536, 3)
+words: | | A | r | a | | | LAT | 21.4ms
+read: 'FPS 166 | GPU 94% | CPU 48% | LAT 21.4ms\na. — | aiteens. 2ostzn = er .\na man Ryat em Colretian ayy a etMabene sph >\nF ue'
+== screenshots/av_avg.png (864, 1536, 3)
+words: 1.0.0.00000 | 7 | ti) | . | i
+read: '© r\n| (-_. <i f ae of i 4 if Pa\neo fF ~ ‘ OA y 4 Co\n7 ‘yy . ee =_—— i ;\nby r > - ——— ; ; =\na! ~¢% on BK ; fy Y ‘\n‘. 7 ; '
+== screenshots/swishflow/sw_30.png (864, 1536, 3)
+words: 
+read: "oa : a ie? ’ ’ ) , :\n© : . - - F) . ' g ; ri , ’\nmS - ' PERCE EA aa\nal : Item List Health Potion ‘ | | | | , | os —- 5 7"
+[0m
+OCR works but isn't finding "Tutorial". Let me probe the actual menu frame more thoroughly.
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -c "
+from app.vision.ocr import OCREngine
+import cv2
+o=OCREngine()
+fr=cv2.imread('screenshots/av_menu_clean.png')
+for psm in [3,6,11,12]:
+    t=o.read(fr, psm=psm, preprocessing='ui', scale=2.0)
+    print('psm',psm,'::', repr(t[:160]))
+print('--- words full frame psm6 scale2 ---')
+w=o.read_words(fr, psm=6, preprocessing='ui', scale=2.0, confidence_threshold=0.0)
+print(' | '.join(x.text for x in w[:40]))
+"
+psm 3 :: 'FPS 166 | GPU 94% | CPU 48% | LAT 21.4ms\n\n'
+psm 6 :: 'FPS 166 | GPU 94% | CPU 48% | LAT 21.4ms\na. — | aiteens. 2ostzn = er .\na man Ryat em Colretian ayy a etMabene sph >\nF uelne a ‘ EN\nwe 2 REL Riese bitertgnaye ss'
+psm 11 :: 'FPS 166 | GPU 94% | CPU 48% | LAT 21.4ms\n\n-{f\n\n-\n\nnk\n\n1!\n\ny\\\n\n|. y.\n\nA\n\nCA\n\n—_\n\na\n\no°\n\nat\n\nfi\n\ni" ¢\n\n7 /\n\n4\n\nA\n\nod\n\nci~\n\nTe wer\n\n-\n\n—\n\ned\n\neel\n\n—\n\nvores 8\n\nne\n\n'
+psm 12 :: "ee\n\nee\n\n=\n\nEee\n\nEEE\n\n-\n\n-\n\n-\n\n00000'0'0'T\n\nceri\n\n7\n\n7\n\n|\n\n=\n\n--\n\n¥y\n\nSh aaiarae atoms\n\nStetewen\n\neS\n\nFeVoteweeen\n\nae\n\ni\n\nJc\n\nAah \\Newveenetes\n\nareniare I\n\nen\n\nL"
+--- words full frame psm6 scale2 ---
+FPS | 166 | | | GPU | 94% | | | CPU | 48% | | | LAT | 21.4ms | a. | — | | | aiteens. | 2ostzn | = | er | . | a | man | Ryat | em | Colretian | ayy | a | etMabene | sph | > | F | uelne | a | ‘ | EN | we | 2 | REL | Riese | bitertgnaye | ss
+[0m
+[0m→ [0mRead scripts/validate_ocr_suite.py[90m [offset=90, limit=35][0m
+OCR genuinely can't read "Tutorial" from these stylized frames — that's a real finding, not a bug. But my "best frame" selection picks the first frame (showing empty OCR), which is unhelpful. Let me improve it to prefer the most OCR-informative frame when no PASS is found.
+[0m→ [0mRead scripts/validate_ocr_suite.py[90m [offset=124, limit=12][0m
+[0m
+[0m← [0mEdit scripts/validate_ocr_suite.py
+Index: C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
++++ C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
+@@ -122,14 +122,23 @@
+                 "ocr": _ocr_snapshot(ocr, frame, assertion),
+                 "message": result.message,
+             }
+             existing = best.get(name)
+-            if existing is None or (record["passed"] and not existing["passed"]):
++            if existing is None or _is_better(record, existing):
+                 best[name] = record
+ 
+     return list(best.values())
+ 
+ 
++def _is_better(candidate: dict[str, Any], current: dict[str, Any]) -> bool:
++    """Prefer PASS over FAIL; on ties prefer the more OCR-informative frame."""
++    if candidate["passed"] and not current["passed"]:
++        return True
++    if candidate["passed"] == current["passed"]:
++        return len(candidate["ocr"]) > len(current["ocr"])
++    return False
++
++
+ def _games_from_suite(suite_path: Path) -> list[dict[str, Any]]:
+     """Build per-game suite dicts (with app_id) from a single or combined suite."""
+     data = json.loads(suite_path.read_text(encoding="utf-8"))
+     games = data.get("games")
+
+[0m
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff format scripts/validate_ocr_suite.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff check scripts/validate_ocr_suite.py tests/test_validate_ocr_suite.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m mypy scripts/validate_ocr_suite.py 2>&1 | tail -3 && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe scripts/validate_ocr_suite.py --suite qa_framework/examples/game_4307180_agentveil_ocr.json --evidence-dir screenshots; echo "EXIT=$?"
+1 file left unchanged
+All checks passed!
+Success: no issues found in 1 source file
+[4307180] AgentVeil.exe  evidence=av_after_agent.png
+  PASS  color_detected:renders non-black frame after startup  Color region 1409x736 at (127, 128)
+  FAIL  ocr_word_present:main menu shows Tutorial entry  ocr="Z | > | : | } | 7 | - | - | - | °"  Word 'Tutorial' not present (conf>=0.5). Saw: 'Z'
+  FAIL  ocr_contains:main menu shows Settings entry  ocr="Z | > | : | } | 7 | - | - | - | °"  OCR text did not contain 'Settings': 'Z > : } 7 - - - °\n'
+SUMMARY: 1 passed, 2 failed, 0 skipped (game 4307180)
+
+TOTAL: 1 passed, 2 failed, 0 skipped
+EXIT=0
+[0m
+Let me investigate whether the menu text is readable at all with tuned OCR params (for the report's follow-up), without modifying the suite.
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -c "
+from app.vision.ocr import OCREngine
+import cv2
+o=OCREngine()
+fr=cv2.imread('screenshots/av_menu_clean.png')
+# try several regions/scales/preprocessing
+for prep in ['ui','binary','raw']:
+    for scale in [1.0,3.0,5.0]:
+        w=o.read_words(fr, psm=6, preprocessing=prep, scale=scale, confidence_threshold=0.0)
+        txt=' | '.join(x.text for x in w)
+        if 'utorial' in txt.lower() or 'set' in txt.lower() or 'exit' in txt.lower() or 'lobby' in txt.lower() or 'create' in txt.lower():
+            print('HIT', prep, scale, '::', txt[:200])
+print('done scan')
+"
+HIT binary 1.0 :: FPS | 166 | | | GPU | 94% | | | CPU | 48% | | | LAT | 21.4ms | @ | & | . | . | o¢ | 2 | «74 | ‘ | \ | { | ® | ° | _. | 7 | a | ‘ | . | ey | - | o | : | + | a | we | -* | N. | 7 | * | . | . | f | . | e
+HIT binary 3.0 :: FPS | 166 | | | GPU | 94% | | | CPU | 48% | | | LAT | 21.4ms | @ | & | . | . | o¢ | 2 | «74 | ‘ | \ | { | ® | ° | _. | 7 | a | ‘ | . | ey | - | o | : | + | a | we | -* | N. | 7 | * | . | . | f | . | e
+HIT binary 5.0 :: FPS | 166 | | | GPU | 94% | | | CPU | 48% | | | LAT | 21.4ms | @ | & | . | . | o¢ | 2 | «74 | ‘ | \ | { | ® | ° | _. | 7 | a | ‘ | . | ey | - | o | : | + | a | we | -* | N. | 7 | * | . | . | f | . | e
+HIT raw 1.0 :: ‘ | — | .-——. | | | |. | Stee | RE | ee. | hn | Tutorial | | | i,
+HIT raw 3.0 :: FPS | 166 | | | GPU | 94% | | | CPU | 48% | | | LAT | 21.4ms | @ | * | \ | : | y | On | TE | we | -y | 6 | ff | |. | pit | ~ | — | of | j | as | Ye | 5 | 3 | x | ary | ; | 3 | f | =f) | 3 | or | SI | 
+HIT raw 5.0 :: FPS | 166 | | | GPU | 94% | | | CPU | 48% | | | LAT | 21.4ms | & | . | 7 | oy | j | y | 9 | . | -{f | rer | Fa | ; | » | - | 6 | \ | é | x | * | BS | 7 | a | . | - | { | if | . | * | fi | rd | > | A |
+done scan
+[0m
+Confirmed: the menu text IS readable with `raw` preprocessing (Tesseract found "Tutorial"), but the suite's `preprocessing: "ui"` degrades it — a genuine tuning finding. My validator correctly reports the real FAIL + OCR text. Let me run all three suites for the report.
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && for s in game_4077460_shinebringers_ocr.json game_4511140_unforgettable_love_ocr.json gameplay_combined_ocr.json; do echo "########## $s ##########"; PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe scripts/validate_ocr_suite.py --suite qa_framework/examples/$s --evidence-dir screenshots; echo "EXIT=$?"; done
+########## game_4077460_shinebringers_ocr.json ##########
+[4077460] SwishAndFlick/Binaries/Win64/SwishAndFlickDemo.exe  evidence=current_state.png
+  PASS  color_detected:renders non-black frame after startup  Color region 1481x50 at (224, 225)
+  PASS  ocr_region_contains:main menu shows 'Play Showcase'  ocr="Play | Showcase | Option | Credits"  Region OCR contained 'Play Showcase': 'Play Showcase Option Credits'
+  PASS  ocr_word_present:main menu word 'Exit' present  ocr="SA | — | £990/ | LH99. | YF | WAKCIILULOVOUS | SAS, | WY | CHL | tee? | ave(img, | 'sll_after_play.png') | print('bright | n | ocr_thresh(img)][:35]) | " | ( | 15.85 | - | JL | 9.1} | h | 33m | | | @15m | 28s | ES | ancel | >= | —— | “LICUILS | _* | Exit"  'Exit' at (779, 739) conf 0.96
+SUMMARY: 3 passed, 0 failed, 0 skipped (game 4077460)
+
+TOTAL: 3 passed, 0 failed, 0 skipped
+EXIT=0
+########## game_4511140_unforgettable_love_ocr.json ##########
+[4511140] Unforgettable_Love.exe  evidence=(none)
+  SKIP  color_detected:renders non-black frame after startup  no evidence frames found  (evidence missing)
+  SKIP  ocr_contains:title / menu text present (draft - tune with live evidence)  no evidence frames found  (evidence missing)
+SUMMARY: 0 passed, 0 failed, 2 skipped (game 4511140)
+
+TOTAL: 0 passed, 0 failed, 2 skipped
+EXIT=0
+########## gameplay_combined_ocr.json ##########
+
+
+<shell_metadata>
+shell tool terminated command after exceeding timeout 120000 ms. If this command is expected to take longer and is not waiting for interactive input, retry with a larger timeout value in milliseconds.
+</shell_metadata>
+[0m
+[0m→ [0mRead scripts/validate_ocr_suite.py[90m [offset=57, limit=25][0m
+The combined run is too slow — it OCRs dozens of evidence frames per game. I'll cap the number of evidence frames processed per game.
+[0m
+[0m← [0mEdit scripts/validate_ocr_suite.py
+Index: C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
++++ C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
+@@ -57,8 +57,9 @@
+ 
+ def validate_suite(
+     suite_dict: dict[str, Any],
+     evidence_dir: str | Path,
++    max_frames: int = 12,
+ ) -> list[dict[str, Any]]:
+     """Run OCR/visual assertions against saved evidence frames.
+ 
+     ``suite_dict`` is a single-game suite mapping with ``assertions`` and
+
+[0m
+[0m← [0mEdit scripts/validate_ocr_suite.py
+Index: C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
++++ C:\Users\Admin\UGAFStudio\scripts\validate_ocr_suite.py
+@@ -80,8 +80,10 @@
+ )
+ 
+ evidence_dir_path = Path(evidence_dir)
+ frames = _find_evidence(evidence_dir_path, app_id)
++if max_frames > 0:
++    frames = frames[:max_frames]
+ 
+ engine = VisualAssertionEngine()
+ ocr = OCREngine()
+ 
+
+[0m
+[0m← [0mEdit scripts/validate_ocr_suite.py
+Index: C:\Users\Admin/UGAFStudio\scripts\validate_ocr_suite.py
+===================================================================
+--- C:\Users\Admin/UGAFStudio\scripts\validate_ocr_suite.py
++++ C:\Users\Admin/UGAFStudio\scripts\validate_ocr_suite.py
+@@ -220,8 +220,14 @@
+     "--evidence-dir",
+     default="screenshots",
+     help="Directory containing captured evidence PNGs.",
+ )
++parser.add_argument(
++    "--max-frames",
++    type=int,
++    default=12,
++    help="Maximum evidence frames to try per game (0 = no limit).",
++)
+ args = parser.parse_args()
+ 
+ suite_path = Path(args.suite).resolve()
+ evidence_dir = Path(args.evidence_dir)
+@@ -229,9 +235,9 @@
+ games = _games_from_suite(suite_path)
+ 
+ all_results: list[dict[str, Any]] = []
+ for game in games:
+-    all_results.extend(validate_suite(game, evidence_dir))
++    all_results.extend(validate_suite(game, evidence_dir, max_frames=args.max_frames))
+ 
+ _print_report(all_results)
+ 
+ if any(r["message"].startswith("error:") for r in all_results):
+
+[0m
+Now add a `--max-frames` CLI option:
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff check scripts/validate_ocr_suite.py tests/test_validate_ocr_suite.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff format --check scripts/validate_ocr_suite.py tests/test_validate_ocr_suite.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m mypy scripts/validate_ocr_suite.py 2>&1 | tail -2 && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m pytest tests/test_validate_ocr_suite.py -q 2>&1 | tail -3
+All checks passed!
+2 files already formatted
+Success: no issues found in 1 source file
+...                                                                      [100%]
+3 passed in 0.84s
+[0m
+Now run the combined suite with the cap:
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && timeout 110 env PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe scripts/validate_ocr_suite.py --suite qa_framework/examples/gameplay_combined_ocr.json --evidence-dir screenshots; echo "EXIT=$?"
+[4077460] game_4077460_shinebringers_ocr  evidence=current_state.png
+  PASS  color_detected:renders non-black frame after startup  Color region 1481x50 at (224, 225)
+  PASS  ocr_region_contains:main menu shows 'Play Showcase'  ocr="Play | Showcase | Option | Credits"  Region OCR contained 'Play Showcase': 'Play Showcase Option Credits'
+  PASS  ocr_word_present:main menu word 'Exit' present  ocr="CULL | CNG, | CV2.CULUR | DURZURATS | Means, | tS | Cm-LAt | , | anyC'show' | in | w.lower() | or | ‘play’ | in | w.tlor | h | 24m | | | @7m | 2s | KEG | ancel | ™‘~y | £ | Ar | N | AF | OA | NPE | 5 | it | tltlc(i‘iéw | Mr | TOO | HOT | Exit"  'Exit' at (779, 741) conf 0.96
+SUMMARY: 3 passed, 0 failed, 0 skipped (game 4077460)
+
+[4307180] game_4307180_agentveil_ocr  evidence=av_after_agent.png
+  PASS  color_detected:renders non-black frame after startup  Color region 1409x736 at (127, 128)
+  FAIL  ocr_word_present:main menu shows Tutorial entry  ocr="= | - | = | | | “—"  Word 'Tutorial' not present (conf>=0.5). Saw: '='
+  FAIL  ocr_contains:main menu shows Settings entry  ocr="= | - | = | | | “—"  OCR text did not contain 'Settings': '= - = | “—\n'
+SUMMARY: 1 passed, 2 failed, 0 skipped (game 4307180)
+
+[4511140] game_4511140_unforgettable_love_ocr  evidence=(none)
+  SKIP  color_detected:renders non-black frame after startup  no evidence frames found  (evidence missing)
+  SKIP  ocr_contains:title / menu text present (draft - tune with live evidence)  no evidence frames found  (evidence missing)
+SUMMARY: 0 passed, 0 failed, 2 skipped (game 4511140)
+
+TOTAL: 4 passed, 2 failed, 2 skipped
+EXIT=0
+[0m
+All runs work. Now let me run the exact validation commands from the task spec to confirm.
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff check scripts/validate_ocr_suite.py tests/test_validate_ocr_suite.py && echo "RUFF_OK" && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff format --check scripts/validate_ocr_suite.py tests/test_validate_ocr_suite.py && echo "FORMAT_OK" && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m mypy scripts/validate_ocr_suite.py && echo "MYPY_OK" && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m pytest tests/test_validate_ocr_suite.py -q 2>&1 | tail -3 && echo "PYTEST_OK"
+All checks passed!
+RUFF_OK
+2 files already formatted
+FORMAT_OK
+Success: no issues found in 1 source file
+MYPY_OK
+...                                                                      [100%]
+3 passed in 0.83s
+PYTEST_OK
+[0m
+All validation commands pass. 
+
+## A2A REPORT
+
+**Files touched**
+- `scripts/validate_ocr_suite.py` (NEW) — headless CLI + importable `validate_suite(suite_dict, evidence_dir, max_frames=12) -> list[dict]`. Reuses the existing `VisualAssertionEngine` / `OCREngine` (no OCR re-implementation, no game/Steam launch). Loads single suites via `load_run_config` and combined suites via the `games` list, deriving `app_id` from filenames/entries. Matches evidence by `app_id` heuristics, runs every assertion against each candidate frame, keeps the best (PASS > most-OCR-informative) outcome, prints a per-game report + summary, and exits 0 (clean) / 1 (evidence-present-but-all-fail) / 2 (unexpected throw).
+- `tests/test_validate_ocr_suite.py` (NEW) — three self-contained tests using cv2-drawn PNGs: PASS on generated "START", SKIP on empty dir (exit 0), FAIL on blank frame.
+
+**Validation outputs** — all four quality gates pass: `ruff`, `ruff format --check`, `mypy`, `pytest` (3 passed).
+
+**Live OCR validation report (against `screenshots/`)**
+
+Agent Veil (`game_4307180_agentveil_ocr.json`):
+```
+[4307180] AgentVeil.exe  evidence=av_after_agent.png
+  PASS  color_detected:renders non-black frame after startup
+  FAIL  ocr_word_present:main menu shows Tutorial entry  ocr="..."  Word 'Tutorial' not present
+  FAIL  ocr_contains:main menu shows Settings entry       ocr="..."  OCR text did not contain 'Settings'
+SUMMARY: 1 passed, 2 failed, 0 skipped (game 4307180)
+```
+SHINEBRINGERS (`game_4077460_shinebringers_ocr.json`): **3 passed, 0 failed** (found `Play Showcase` + `Exit` in `swishflow/sw_*` frames). Unforgettable Love (`game_4511140_unforgettable_love_ocr.json`): **2 SKIPPED** (no `ul_*`/`love` evidence — reported as EXPECTED-FAIL, not fabricated). Combined run: `TOTAL: 4 passed, 2 failed, 2 skipped`, exit 0.
+
+**Follow-ups / findings**
+- Agent Veil OCR assertions FAIL with `preprocessing: "ui"`. I verified the menu text IS readable: Tesseract finds `Tutorial` on `av_menu_clean.png` with `preprocessing: "raw"`, `psm 6`, `scale 1.0`. → Tune the Agent Veil suite's `preprocessing` (and re-check the `region: [400,300,736,300]`) before the live 3/3 gate. The validator correctly surfaced this without touching the suite.
+- Unforgettable Love has a genuine evidence gap (no menu frame captured). Capture a clean menu frame (`ul_*`/`love*`) to validate the draft `ocr_contains: Love` assertion.
+- Shinebringers' `Exit` word match is noisy (lots of garbage words) but passes at conf 0.96 — fine, but a `confidence_threshold`/region review is worthwhile.
+
+No `screenshots/` or `*_ocr.json` suites were modified; no game/Steam was launched.

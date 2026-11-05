@@ -1,0 +1,24 @@
+{
+  "timeout": 60.0,
+  "capture_delay": 3.0,
+  "executable_name": "Unforgettable_Love.exe",
+  "monitor_index": 1,
+  "screenshot_dir": "screenshots/live/ocr",
+  "assertions": [
+    {
+      "name": "renders non-black frame after startup",
+      "check": "color_detected",
+      "color": [64, 55, 48],
+      "tolerance": 40
+    },
+    {
+      "name": "title / menu text present (draft - tune with live evidence)",
+      "check": "ocr_contains",
+      "text": "Love",
+      "region": [300, 200, 936, 400],
+      "preprocessing": "ui",
+      "psm": 6,
+      "confidence_threshold": 0.4
+    }
+  ]
+}

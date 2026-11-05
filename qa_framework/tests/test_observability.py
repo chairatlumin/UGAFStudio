@@ -8,14 +8,13 @@ import time
 
 import pytest
 
+from qa_framework.metrics import CostTracker
 from qa_framework.observability import (
     CircuitBreaker,
     IdempotencyGuard,
     TraceExporter,
     TraceSpan,
 )
-from qa_framework.metrics import CostTracker
-
 
 # ---------------------------------------------------------------------------
 # TraceSpan tests

@@ -6,14 +6,16 @@ from typing import Any
 import cv2
 import numpy as np
 
+from app.core.paths import writable_path
 from app.utils.file import ensure_directory, unique_path
 
 
 class ScreenshotService:
     """Saves captured frames to disk."""
 
-    def __init__(self, output_dir: Path = Path("screenshots")) -> None:
-        self.output_dir = ensure_directory(output_dir)
+    def __init__(self, output_dir: Path | None = None) -> None:
+        target = output_dir if output_dir is not None else writable_path("screenshots")
+        self.output_dir = ensure_directory(target)
 
     def save(self, frame: np.ndarray, name: str | None = None) -> Path:
         """

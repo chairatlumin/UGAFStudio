@@ -79,10 +79,18 @@ class ConsensusValidator:
     );
     """
 
-    def __init__(self, db_path: str = ":memory:", min_replicas: int = 3) -> None:
+    def __init__(self, db_path: str = ":memory:", min_replicas: int = 3, consensus_mode: str = "weighted") -> None:
+        """Initialize consensus validator.
+
+        Args:
+            db_path: SQLite path for reputation storage
+            min_replicas: minimum number of agent results required
+            consensus_mode: "weighted" (naive voting) or "pbft" (3-phase commit)
+        """
         self.db_path = db_path
         self.min_replicas = min_replicas
-        self._results: dict[str, list[QAResult]] = {}  # in-memory task results
+        self.consensus_mode = consensus_mode
+        self._results: dict[str, list[QAResult]] = {}
         if db_path != ":memory:":
             self._initialize_reputation_table()
 
@@ -120,7 +128,10 @@ class ConsensusValidator:
                 escalation_reason=f"Insufficient replicas: {len(results)} < {self.min_replicas}",
             )
 
-        # Find most common outcome as primary proposal
+        if self.consensus_mode == "pbft":
+            return self._resolve_pbft(task_id, results, min_confidence)
+
+        # Weighted voting mode (original)
         outcome_counts: dict[str, int] = {}
         for r in results:
             outcome_counts[r.outcome.value] = outcome_counts.get(r.outcome.value, 0) + 1
@@ -312,6 +323,54 @@ class ConsensusValidator:
     def _get_results_for_task(self, task_id: str) -> list[QAResult]:
         """Retrieve all results for a task."""
         return self._results.get(task_id, [])
+
+    def _resolve_pbft(
+        self, task_id: str, results: list[QAResult], min_confidence: float
+    ) -> ConsensusResult:
+        """Resolve consensus using PBFT 3-phase commit."""
+        from qa_framework.pbft_consensus import PBFTNetwork
+
+        # Determine unique outcomes
+        outcome_counts: dict[str, int] = {}
+        for r in results:
+            outcome_counts[r.outcome.value] = outcome_counts.get(r.outcome.value, 0) + 1
+
+        # Pick majority outcome as proposal value
+        proposed_value = max(outcome_counts, key=outcome_counts.get)  # type: ignore
+
+        # Calculate f (max faulty nodes) — tolerate up to n//3
+        n = len(results)
+        f = max(1, n // 3)
+
+        # Build PBFT network
+        network = PBFTNetwork(view=0, f=f)
+        for r in results:
+            import os
+            node = network.create_node(r.agent_id, private_key=os.urandom(32))
+
+        # Run consensus
+        pbft_result = network.propose(task_id, proposed_value)
+
+        if pbft_result.committed:
+            # Find matching QAResult for committed value
+            matching = [r for r in results if r.outcome.value == pbft_result.value]
+            best = max(matching, key=lambda r: r.confidence)
+            avg_confidence = sum(r.confidence for r in matching) / len(matching)
+            return ConsensusResult(
+                status="consensus" if avg_confidence >= min_confidence else "disputed",
+                result=best,
+                confidence=avg_confidence,
+                votes=[],
+                escalation_reason=None,
+            )
+        else:
+            return ConsensusResult(
+                status="escalated",
+                result=None,
+                confidence=0.0,
+                votes=[],
+                escalation_reason="PBFT could not reach quorum",
+            )
 
     def finalize_task(self, task_id: str, consensus: ConsensusResult) -> None:
         """Update reputations based on consensus outcome and clean up results."""

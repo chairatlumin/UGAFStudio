@@ -1,0 +1,517 @@
+[0m
+> build · hy3-free
+[0m
+[0m→ [0mRead scripts/live_gameplay_agent.py[90m [offset=1, limit=120][0m
+[0m→ [0mRead qa_framework/gameplay_agent/reward.py
+I'll start by exploring the relevant files to understand the codebase.
+[0m✱ [0mGrep "_visual_hash"[90m 14 matches[0m
+[0m→ [0mRead scripts/live_gameplay_agent.py[90m [offset=300, limit=200][0m
+[0m→ [0mRead scripts/live_gameplay_agent.py[90m [offset=499, limit=60][0m
+[0m→ [0mRead qa_framework/gameplay_agent/skill_cache.py[90m [offset=1, limit=40][0m
+[0m→ [0mRead scripts/live_gameplay_agent.py[90m [offset=558, limit=30][0m
+[0m✱ [0mGrep "LiveGameplayAgent\("[90m 1 match[0m
+[0m→ [0mRead scripts/live_gameplay_agent.py[90m [offset=700, limit=75][0m
+[0m✱ [0mGrep "def normalize_params|def resolve_click_target|def build_ocr_context"[90m 3 matches[0m
+[0m→ [0mRead tests/test_moa_live_wiring.py[90m [limit=60][0m
+Let me check `normalize_params`, `resolve_click_target`, and `build_ocr_context` to understand the test path.
+[0m→ [0mRead scripts/live_gameplay_agent.py[90m [offset=200, limit=100][0m
+[0m
+[0m← [0mEdit scripts/live_gameplay_agent.py
+Index: C:\Users\Admin\UGAFStudio\scripts\live_gameplay_agent.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\scripts\live_gameplay_agent.py
++++ C:\Users\Admin\UGAFStudio\scripts\live_gameplay_agent.py
+@@ -110,8 +110,38 @@
+     return img
+ 
+ 
+ # ---------------------------------------------------------------------------
++# Capture-health guard (TASK-026)
++# ---------------------------------------------------------------------------
++
++
++def frame_health(frame: np.ndarray) -> dict[str, float]:
++    """Return capture-health metrics for *frame*.
++
++    Keys:
++      mean_brightness  - mean of grayscale (0..255); very low => black frame.
++      non_black_ratio  - fraction of pixels with max(R,G,B) > 8.
++      unique_ratio     - fraction of distinct quantized (4-bit) colors; very low
++                         => flat / single-color (wallpaper-like) frame.
++    """
++    if frame.size == 0:
++        return {"mean_brightness": 0.0, "non_black_ratio": 0.0, "unique_ratio": 0.0}
++    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
++    mean_brightness = float(gray.mean())
++    non_black_ratio = float(np.mean(frame.max(axis=2) > 8))
++    quantized = (frame >> 4).reshape(-1, frame.shape[2])
++    _, counts = np.unique(quantized, axis=0, return_counts=True)
++    total = quantized.shape[0]
++    unique_ratio = float(len(counts) / total) if total else 0.0
++    return {
++        "mean_brightness": mean_brightness,
++        "non_black_ratio": non_black_ratio,
++        "unique_ratio": unique_ratio,
++    }
++
++
++# ---------------------------------------------------------------------------
+ # OCR helper
+ # ---------------------------------------------------------------------------
+ 
+ import pytesseract  # noqa: E402
+
+[0m
+Now I have enough understanding. Let me implement the changes.
+[0m← [0mEdit scripts/live_gameplay_agent.py
+Index: C:\Users\Admin\UGAFStudio\scripts\live_gameplay_agent.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\scripts\live_gameplay_agent.py
++++ C:\Users\Admin\UGAFStudio\scripts\live_gameplay_agent.py
+@@ -364,8 +364,10 @@
+     strategy: str = "menu_nav",
+     loop_window: int = 4,
+     consecutive_failure_limit: int = 3,
+     backoff_seconds: float = 30.0,
++    capture_warn_threshold: float = 0.02,
++    freeze_warn: bool = True,
+ ) -> None:
+     self._agent = agent
+     self._cache = cache
+     self._executor = executor
+@@ -380,9 +382,15 @@
+     self._trace_path = trace_path
+     self._loop_window = loop_window
+     self._consecutive_failure_limit = consecutive_failure_limit
+     self._backoff_seconds = backoff_seconds
++    self._capture_warn_threshold = capture_warn_threshold
++    self._freeze_warn = freeze_warn
+ 
++    # TASK-026: capture-health guard state
++    self._prev_capture_hash: str | None = None
++    self._last_capture_health: dict[str, float] | None = None
++
+     # loop-guard state
+     self._recent_actions: deque[tuple[str, dict, str]] = deque(maxlen=loop_window)
+ 
+     # stuck-recovery state
+
+[0m
+[0m← [0mEdit scripts/live_gameplay_agent.py
+Index: C:\Users\Admin\UGAFStudio\scripts\live_gameplay_agent.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\scripts\live_gameplay_agent.py
++++ C:\Users\Admin\UGAFStudio\scripts\live_gameplay_agent.py
+@@ -440,9 +440,29 @@
+ """Run one observe/decide/dispatch/reward iteration.
+ 
+ Returns the computed reward for the step.
+ """
+-# 0. strategy observability (TASK-024)
++# 0. capture-health guard (TASK-026): skip black/empty captures so a bad
++# PrintWindow/mss capture does not pollute the VLM/MOA or skill cache.
++h = frame_health(frame)
++self._last_capture_health = h
++frame_hash = _visual_hash(frame)
++
++if h["non_black_ratio"] < self._capture_warn_threshold:
++    logger.warning(
++        "capture health: near-black frame (non_black_ratio={})",
++        h["non_black_ratio"],
++    )
++    self._prev_capture_hash = frame_hash
++    return 0.0
++
++if self._freeze_warn and frame_hash == self._prev_capture_hash:
++    logger.warning(
++        "capture health: frame unchanged since last step (possible capture freeze)"
++    )
++self._prev_capture_hash = frame_hash
++
++# 0b. strategy observability (TASK-024)
+ logger.info("strategy={}", self._strategy)
+ 
+ # 1. OCR context
+ context = build_ocr_context(ocr_words)
+
+[0m
+Now the `step()` pre-decision check:
+[0m✗ [0mWrite  failed
+[91m[1mError: [0mThe write tool was called with invalid arguments: SchemaError(Missing key
+  at ["filePath"]).
+Please rewrite the input so it satisfies the expected schema.
+Now create the test file:
+[0m
+[0m← [0mWrite tests/test_capture_health.py
+Wrote file successfully.
+[0m
+Now run the validation commands:
+[0m$ [0mecho "[graphify] knowledge graph at graphify-out/. For focused questions, run graphify query with your question (scoped subgraph, usually much smaller than GRAPH_REPORT.md) instead of grepping raw files. Read GRAPH_REPORT.md only for broad architecture context." ; cd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff check scripts/live_gameplay_agent.py tests/test_capture_health.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff format --check scripts/live_gameplay_agent.py tests/test_capture_health.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m mypy scripts/live_gameplay_agent.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m pytest tests/test_capture_health.py tests/test_moa_live_wiring.py tests/test_game_profiles.py -q
+[graphify] knowledge graph at graphify-out/. For focused questions, run graphify query with your question (scoped subgraph, usually much smaller than GRAPH_REPORT.md) instead of grepping raw files. Read GRAPH_REPORT.md only for broad architecture context.
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests\test_capture_health.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from pathlib import Path
+ 4 | | from typing import cast
+ 5 | |
+ 6 | | import numpy as np
+ 7 | | from unittest.mock import MagicMock
+ 8 | |
+ 9 | | from qa_framework.gameplay_agent.actions import Action, ActionExecutor
+10 | | from qa_framework.gameplay_agent.reward import FrameDiffReward
+11 | | from qa_framework.gameplay_agent.skill_cache import SkillCache
+12 | | from qa_framework.gameplay_agent.vlm_agent import VLMAgent
+13 | | from scripts.live_gameplay_agent import LiveGameplayAgent, frame_health
+   | |_______________________________________________________________________^
+help: Organize imports
+  |
+4 | from typing import cast
+5 + from unittest.mock import MagicMock
+6 |
+7 | import numpy as np
+  - from unittest.mock import MagicMock
+8 |
+  |
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
+[0m
+[0m← [0mEdit tests/test_capture_health.py
+Index: C:\Users\Admin\UGAFStudio\tests\test_capture_health.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\tests\test_capture_health.py
++++ C:\Users\Admin\UGAFStudio\tests\test_capture_health.py
+@@ -1,11 +1,11 @@
+ from __future__ import annotations
+ 
+ from pathlib import Path
+ from typing import cast
++from unittest.mock import MagicMock
+ 
+ import numpy as np
+-from unittest.mock import MagicMock
+ 
+ from qa_framework.gameplay_agent.actions import Action, ActionExecutor
+ from qa_framework.gameplay_agent.reward import FrameDiffReward
+ from qa_framework.gameplay_agent.skill_cache import SkillCache
+
+[0m
+Import sorting. Let me fix:
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff check scripts/live_gameplay_agent.py tests/test_capture_health.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff format --check scripts/live_gameplay_agent.py tests/test_capture_health.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m mypy scripts/live_gameplay_agent.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m pytest tests/test_capture_health.py tests/test_moa_live_wiring.py tests/test_game_profiles.py -q
+All checks passed!
+2 files already formatted
+Success: no issues found in 1 source file
+......FFF..F.FF.                                                         [100%]
+================================== FAILURES ===================================
+_________________ test_moa_update_rewards_called_during_step __________________
+
+tmp_path = WindowsPath('C:/Users/Admin/AppData/Local/Temp/pytest-of-Admin/pytest-140/test_moa_update_rewards_called0')
+
+    def test_moa_update_rewards_called_during_step(tmp_path: Path) -> None:
+        """When the agent is an MOAAgent, step() feeds the frame-diff reward back."""
+        from qa_framework.gameplay_agent.moa import _action_signature
+    
+        agent = _MockMOAAgent(early_exit=True)
+        live = _build_live(agent, tmp_path)
+    
+        ocr_words = [{"text": "menu", "x": 10, "y": 20, "w": 30, "h": 10}]
+        frame = np.zeros((16, 16, 3), dtype=np.uint8)
+    
+        live.step(frame, ocr_words, frame)
+    
+>       assert len(agent.update_rewards_calls) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+E        +    where [] = <test_moa_live_wiring._MockMOAAgent object at 0x000001FD7923A7B0>.update_rewards_calls
+
+tests\test_moa_live_wiring.py:143: AssertionError
+---------------------------- Captured stderr call -----------------------------
+2026-08-27 14:25:11.297 | WARNING  | scripts.live_gameplay_agent:step:451 - capture health: near-black frame (non_black_ratio=0.0)
+_____________________ test_non_moa_agent_not_fed_rewards ______________________
+
+tmp_path = WindowsPath('C:/Users/Admin/AppData/Local/Temp/pytest-of-Admin/pytest-140/test_non_moa_agent_not_fed_rew0')
+
+    def test_non_moa_agent_not_fed_rewards(tmp_path: Path) -> None:
+        """A plain VLMAgent-shaped agent does not trigger reward weighting."""
+        cache = SkillCache(path=tmp_path / "skills.json")
+        agent = _PlainAgent()
+        live = LiveGameplayAgent(
+            agent=cast("VLMAgent | MOAAgent", agent),
+            cache=cache,
+            executor=cast("ActionExecutor", _RecordingExecutor()),
+            reward_fn=FrameDiffReward(),
+            window_rect=(0, 0, 100, 100),
+            menu_keywords=frozenset(),
+            win_w=100,
+            win_h=100,
+            trace_path=tmp_path / "trace.jsonl",
+        )
+        frame = np.zeros((16, 16, 3), dtype=np.uint8)
+        live.step(frame, [], frame)
+>       assert agent.learn_called is True  # learn still invoked
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert False is True
+E        +  where False = <test_moa_live_wiring._PlainAgent object at 0x000001FD7923A660>.learn_called
+
+tests\test_moa_live_wiring.py:168: AssertionError
+---------------------------- Captured stderr call -----------------------------
+2026-08-27 14:25:11.364 | WARNING  | scripts.live_gameplay_agent:step:451 - capture health: near-black frame (non_black_ratio=0.0)
+_______________ test_moa_backoff_only_on_full_decision_failure ________________
+
+tmp_path = WindowsPath('C:/Users/Admin/AppData/Local/Temp/pytest-of-Admin/pytest-140/test_moa_backoff_only_on_full_0')
+
+    def test_moa_backoff_only_on_full_decision_failure(tmp_path: Path) -> None:
+        """MOA with 1/N sub-agents voting must NOT trip the live back-off.
+    
+        A 2-of-3 model error inflates the MOA's consecutive_fallbacks, but the
+        decision still produced a valid action, so last_decision_succeeded stays
+        True and step() must NOT sleep/back off. Only a total failure (flag False)
+        should back off.
+        """
+        agent = _MockMOAAgent(early_exit=True)
+        live = _build_live(agent, tmp_path)
+        frame = np.zeros((16, 16, 3), dtype=np.uint8)
+    
+        # A real vote succeeded -> flag True -> no back-off path taken.
+        agent.last_decision_succeeded = True
+        live.step(frame, [], frame)
+        # No exception, decision treated as successful.
+        assert agent.last_decision_succeeded is True
+    
+        # Simulate a total sub-agent failure -> flag False -> step should still run
+        # (the back-off sleep itself is exercised by the live loop; here we just
+        # confirm the guard reads the flag, not consecutive_fallbacks).
+        agent.last_decision_succeeded = False
+        live.step(frame, [], frame)
+        # After a failed decision the loop resets the flag so a later good vote clears it.
+>       assert agent.last_decision_succeeded is True
+E       assert False is True
+E        +  where False = <test_moa_live_wiring._MockMOAAgent object at 0x000001FD792142D0>.last_decision_succeeded
+
+tests\test_moa_live_wiring.py:196: AssertionError
+---------------------------- Captured stderr call -----------------------------
+2026-08-27 14:25:11.370 | WARNING  | scripts.live_gameplay_agent:step:451 - capture health: near-black frame (non_black_ratio=0.0)
+2026-08-27 14:25:11.371 | WARNING  | scripts.live_gameplay_agent:step:451 - capture health: near-black frame (non_black_ratio=0.0)
+____________________ test_menu_nav_injects_escape_on_stuck ____________________
+
+tmp_path = WindowsPath('C:/Users/Admin/AppData/Local/Temp/pytest-of-Admin/pytest-140/test_menu_nav_injects_escape_o0')
+
+    def test_menu_nav_injects_escape_on_stuck(tmp_path: Path) -> None:
+        """menu_nav keeps the legacy stuck-escape keyboard fallback."""
+        agent, executor, _ = _make_agent(
+            "menu_nav",
+            {"action": "key_press", "params": {"key": "w"}},
+            tmp_path=tmp_path,
+        )
+        ocr_words = [{"text": "menu", "x": 10, "y": 20, "w": 30, "h": 10}]
+        frame = np.zeros((16, 16, 3), dtype=np.uint8)
+        for _ in range(3):
+            agent.step(frame, ocr_words, frame)
+    
+        escapes = [
+            a
+            for a in executor.dispatched
+            if a.action == "key_press" and a.params.get("key") == "escape"
+        ]
+>       assert len(escapes) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests\test_game_profiles.py:130: AssertionError
+---------------------------- Captured stderr call -----------------------------
+2026-08-27 14:25:11.379 | WARNING  | scripts.live_gameplay_agent:step:451 - capture health: near-black frame (non_black_ratio=0.0)
+2026-08-27 14:25:11.379 | WARNING  | scripts.live_gameplay_agent:step:451 - capture health: near-black frame (non_black_ratio=0.0)
+2026-08-27 14:25:11.379 | WARNING  | scripts.live_gameplay_agent:step:451 - capture health: near-black frame (non_black_ratio=0.0)
+__________ test_vn_advance_advances_on_noop_and_skips_cache_pruning ___________
+
+tmp_path = WindowsPath('C:/Users/Admin/AppData/Local/Temp/pytest-of-Admin/pytest-140/test_vn_advance_advances_on_no0')
+
+    def test_vn_advance_advances_on_noop_and_skips_cache_pruning(tmp_path: Path) -> None:
+        """vn_advance converts a no-op into a click, and skips reward cache pruning."""
+        agent, executor, cache = _make_agent(
+            "vn_advance",
+            {"action": "noop", "params": {}},
+            tmp_path=tmp_path,
+        )
+        ocr_words: list[dict] = []
+        frame = np.zeros((16, 16, 3), dtype=np.uint8)
+        agent.step(frame, ocr_words, frame)
+    
+        clicks = [a for a in executor.dispatched if a.action == "click"]
+>       assert clicks, "vn_advance should advance dialogue with a click on noop"
+E       AssertionError: vn_advance should advance dialogue with a click on noop
+E       assert []
+
+tests\test_game_profiles.py:170: AssertionError
+---------------------------- Captured stderr call -----------------------------
+2026-08-27 14:25:11.391 | WARNING  | scripts.live_gameplay_agent:step:451 - capture health: near-black frame (non_black_ratio=0.0)
+________________ test_vn_advance_clicks_choice_keyword_coords _________________
+
+tmp_path = WindowsPath('C:/Users/Admin/AppData/Local/Temp/pytest-of-Admin/pytest-140/test_vn_advance_clicks_choice_0')
+
+    def test_vn_advance_clicks_choice_keyword_coords(tmp_path: Path) -> None:
+        """vn_advance clicks the on-screen coords of an OCR `choice` keyword."""
+        agent, executor, _ = _make_agent(
+            "vn_advance",
+            {"action": "click", "params": {"button": "left"}},
+            tmp_path=tmp_path,
+            menu_keywords=frozenset({"choice", "next", "skip"}),
+        )
+        ocr_words = [{"text": "choice", "x": 10, "y": 20, "w": 30, "h": 10}]
+        frame = np.zeros((16, 16, 3), dtype=np.uint8)
+        agent.step(frame, ocr_words, frame)
+    
+        moves = [
+            a
+            for a in executor.dispatched
+            if a.action == "mouse_move" and a.params.get("x") == 25 and a.params.get("y") == 25
+        ]
+>       assert moves, "vn_advance should click the 'choice' keyword's centre (25,25)"
+E       AssertionError: vn_advance should click the 'choice' keyword's centre (25,25)
+E       assert []
+
+tests\test_game_profiles.py:193: AssertionError
+---------------------------- Captured stderr call -----------------------------
+2026-08-27 14:25:11.397 | WARNING  | scripts.live_gameplay_agent:step:451 - capture health: near-black frame (non_black_ratio=0.0)
+=========================== short test summary info ===========================
+FAILED tests/test_moa_live_wiring.py::test_moa_update_rewards_called_during_step
+FAILED tests/test_moa_live_wiring.py::test_non_moa_agent_not_fed_rewards - as...
+FAILED tests/test_moa_live_wiring.py::test_moa_backoff_only_on_full_decision_failure
+FAILED tests/test_game_profiles.py::test_menu_nav_injects_escape_on_stuck - a...
+FAILED tests/test_game_profiles.py::test_vn_advance_advances_on_noop_and_skips_cache_pruning
+FAILED tests/test_game_profiles.py::test_vn_advance_clicks_choice_keyword_coords
+6 failed, 10 passed in 0.32s
+[0m
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && grep -rn "np.zeros((16, 16, 3)" tests/test_moa_live_wiring.py tests/test_game_profiles.py
+tests/test_moa_live_wiring.py:139:    frame = np.zeros((16, 16, 3), dtype=np.uint8)
+tests/test_moa_live_wiring.py:166:    frame = np.zeros((16, 16, 3), dtype=np.uint8)
+tests/test_moa_live_wiring.py:182:    frame = np.zeros((16, 16, 3), dtype=np.uint8)
+tests/test_game_profiles.py:121:    frame = np.zeros((16, 16, 3), dtype=np.uint8)
+tests/test_game_profiles.py:145:    frame = np.zeros((16, 16, 3), dtype=np.uint8)
+tests/test_game_profiles.py:166:    frame = np.zeros((16, 16, 3), dtype=np.uint8)
+tests/test_game_profiles.py:185:    frame = np.zeros((16, 16, 3), dtype=np.uint8)
+[0m
+The existing tests use black frames, which now correctly trip the guard. I need to update those tests to use non-black frames (the guard is working as intended). Let me find them.
+[0m← [0mEdit tests/test_moa_live_wiring.py
+Index: C:\Users\Admin\UGAFStudio\tests\test_moa_live_wiring.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\tests\test_moa_live_wiring.py
++++ C:\Users\Admin\UGAFStudio\tests\test_moa_live_wiring.py
+@@ -135,9 +135,9 @@
+ agent = _MockMOAAgent(early_exit=True)
+ live = _build_live(agent, tmp_path)
+ 
+ ocr_words = [{"text": "menu", "x": 10, "y": 20, "w": 30, "h": 10}]
+-frame = np.zeros((16, 16, 3), dtype=np.uint8)
++frame = np.full((16, 16, 3), 128, dtype=np.uint8)
+ 
+ live.step(frame, ocr_words, frame)
+ 
+ assert len(agent.update_rewards_calls) == 1
+@@ -162,9 +162,9 @@
+     win_w=100,
+     win_h=100,
+     trace_path=tmp_path / "trace.jsonl",
+ )
+-frame = np.zeros((16, 16, 3), dtype=np.uint8)
++frame = np.full((16, 16, 3), 128, dtype=np.uint8)
+ live.step(frame, [], frame)
+ assert agent.learn_called is True  # learn still invoked
+ # no assertion beyond learn; just confirms no MOA path crashes
+ 
+@@ -178,9 +178,9 @@
+ should back off.
+ """
+ agent = _MockMOAAgent(early_exit=True)
+ live = _build_live(agent, tmp_path)
+-frame = np.zeros((16, 16, 3), dtype=np.uint8)
++frame = np.full((16, 16, 3), 128, dtype=np.uint8)
+ 
+ # A real vote succeeded -> flag True -> no back-off path taken.
+ agent.last_decision_succeeded = True
+ live.step(frame, [], frame)
+
+[0m
+[0m← [0mEdit tests/test_game_profiles.py
+Index: C:\Users\Admin\UGAFStudio\tests\test_game_profiles.py
+===================================================================
+--- C:\Users\Admin\UGAFStudio\tests\test_game_profiles.py
++++ C:\Users\Admin\UGAFStudio\tests\test_game_profiles.py
+@@ -117,9 +117,9 @@
+     {"action": "key_press", "params": {"key": "w"}},
+     tmp_path=tmp_path,
+ )
+ ocr_words = [{"text": "menu", "x": 10, "y": 20, "w": 30, "h": 10}]
+-frame = np.zeros((16, 16, 3), dtype=np.uint8)
++frame = np.full((16, 16, 3), 128, dtype=np.uint8)
+ for _ in range(3):
+     agent.step(frame, ocr_words, frame)
+ 
+ escapes = [
+@@ -141,9 +141,9 @@
+ # Even though a "menu" keyword is present, realtime_flick disables matching.
+ assert agent._menu_keywords == frozenset()
+ 
+ ocr_words = [{"text": "menu", "x": 10, "y": 20, "w": 30, "h": 10}]
+-frame = np.zeros((16, 16, 3), dtype=np.uint8)
++frame = np.full((16, 16, 3), 128, dtype=np.uint8)
+ for _ in range(3):
+     agent.step(frame, ocr_words, frame)
+ 
+ escapes = [
+@@ -162,9 +162,9 @@
+     {"action": "noop", "params": {}},
+     tmp_path=tmp_path,
+ )
+ ocr_words: list[dict] = []
+-frame = np.zeros((16, 16, 3), dtype=np.uint8)
++frame = np.full((16, 16, 3), 128, dtype=np.uint8)
+ agent.step(frame, ocr_words, frame)
+ 
+ clicks = [a for a in executor.dispatched if a.action == "click"]
+ assert clicks, "vn_advance should advance dialogue with a click on noop"
+@@ -181,9 +181,9 @@
+     tmp_path=tmp_path,
+     menu_keywords=frozenset({"choice", "next", "skip"}),
+ )
+ ocr_words = [{"text": "choice", "x": 10, "y": 20, "w": 30, "h": 10}]
+-frame = np.zeros((16, 16, 3), dtype=np.uint8)
++frame = np.full((16, 16, 3), 128, dtype=np.uint8)
+ agent.step(frame, ocr_words, frame)
+ 
+ moves = [
+     a
+
+[0m
+I'll replace the black test frames with non-black frames (uniform gray, still non_black_ratio=1.0) in both files:
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m pytest tests/test_capture_health.py tests/test_moa_live_wiring.py tests/test_game_profiles.py -q
+................                                                         [100%]
+16 passed in 30.91s
+[0m
+All 16 pass. Now the full validation suite:
+[0m$ [0mcd C:/Users/Admin/UGAFStudio && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff check scripts/live_gameplay_agent.py tests/test_capture_health.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m ruff format --check scripts/live_gameplay_agent.py tests/test_capture_health.py && PYTHONPATH=C:/Users/Admin/UGAFStudio C:/Python314/python.exe -m mypy scripts/live_gameplay_agent.py && echo "ALL VALIDATION PASSED"
+All checks passed!
+2 files already formatted
+Success: no issues found in 1 source file
+ALL VALIDATION PASSED
+[0m
+All validation commands pass.
+
+## A2A REPORT
+
+**Files touched**
+- `scripts/live_gameplay_agent.py` — added module-level `frame_health()` helper; added `capture_warn_threshold`/`freeze_warn` `__init__` params plus `_prev_capture_hash`/`_last_capture_health` state; inserted the TASK-026 pre-decision capture-health guard at the top of `LiveGameplayAgent.step()` (near-black frames early-return with `reward=0.0` without calling the agent/executor/trace; unchanged frames log a warning only; freeze hash always updated).
+- `tests/test_capture_health.py` — NEW: `test_frame_health_black`, `test_frame_health_normal`, `test_step_skips_black_frame`, `test_step_freeze_logged_not_skipped`.
+- `tests/test_moa_live_wiring.py` & `tests/test_game_profiles.py` — updated 6 incidental black test frames to non-black (`np.full(..., 128)`) so they exercise core logic past the new guard.
+
+**Validation outputs**
+- ruff check: passed
+- ruff format --check: passed (2 files formatted)
+- mypy: success, no issues
+- pytest (capture_health + moa_live_wiring + game_profiles): 16 passed
+
+**Follow-ups**
+- The desktop-wallpaper case is partially covered via `unique_ratio` (now in `_last_capture_health`) but the task spec only skips on `non_black_ratio`; a full wallpaper heuristic (flagging very low `unique_ratio` for a static fullscreen) can be added later as an opt-in skip if needed.
+- `test_moa_backoff_only_on_full_decision_failure` still incurs a 30s backoff sleep from an earlier task's path; consider reducing `backoff_seconds` in that fixture.

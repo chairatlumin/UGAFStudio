@@ -22,24 +22,36 @@ class DashboardWidget(QWidget):
         self._total = QLabel("Total: 0")
         self._passed = QLabel("Passed: 0")
         self._failed = QLabel("Failed: 0")
+        for label in (self._total, self._passed, self._failed):
+            label.setMinimumWidth(150)
+            label.setStyleSheet(
+                "background:#ffffff;color:#243442;border:1px solid #d7e0e8;"
+                "border-radius:7px;padding:12px 16px;font-size:15px;font-weight:600"
+            )
 
         self._table = QTableWidget(0, 3)
         self._table.setHorizontalHeaderLabels(["Test", "Status", "Duration (ms)"])
         self._table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self._table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self._table.verticalHeader().setVisible(False)
+        self._table.setAlternatingRowColors(True)
+        self._table.setShowGrid(False)
+        self._table.setMinimumHeight(260)
 
         self._build_ui()
         self._refresh_summary([])
 
     def _build_ui(self) -> None:
         summary = QHBoxLayout()
+        summary.setSpacing(12)
         summary.addWidget(self._total)
         summary.addWidget(self._passed)
         summary.addWidget(self._failed)
         summary.addStretch()
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setSpacing(14)
         layout.addLayout(summary)
         layout.addWidget(self._table)
 
@@ -74,4 +86,13 @@ class DashboardWidget(QWidget):
         self._passed.setText(f"Passed: {summary['passed']}")
         self._failed.setText(f"Failed: {summary['failed']}")
 
-        self._failed.setStyleSheet("color:#ef5350;" if summary["failed"] else "color:#2e7d32;")
+        self._passed.setStyleSheet(
+            "background:#ffffff;color:#18704a;border:1px solid #b9dfcc;"
+            "border-radius:7px;padding:12px 16px;font-size:15px;font-weight:600"
+        )
+        failed_color = "#b42318" if summary["failed"] else "#536675"
+        failed_border = "#f0c6c2" if summary["failed"] else "#d7e0e8"
+        self._failed.setStyleSheet(
+            f"background:#ffffff;color:{failed_color};border:1px solid {failed_border};"
+            "border-radius:7px;padding:12px 16px;font-size:15px;font-weight:600"
+        )

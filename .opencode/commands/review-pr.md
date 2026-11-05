@@ -100,6 +100,22 @@ Severity guidance:
 - `Low` — minor improvement; non-blocking.
 - `Informational` — observation or context, no action strictly required.
 
+## Review Gate
+
+The Review Gate translates the findings and CI/check status above into a single verdict. The Review Status and Final Recommendation must follow these rules — do not deviate from them.
+
+- Any `Critical` finding → BLOCK / REQUEST CHANGES
+- Any `High` finding → BLOCK / REQUEST CHANGES
+- Any `Medium` finding → NEEDS DISCUSSION
+- `Low` finding → non-blocking
+- `Informational` finding → non-blocking
+- Any failed CI/check → BLOCK / REQUEST CHANGES
+- Any pending CI/check → NEEDS DISCUSSION
+- All required CI/checks passed → quality gate passed
+- Missing or unverifiable critical review data (e.g. GitHub MCP call fails or returns no data) → NEEDS DISCUSSION
+
+Resolution order (highest wins): BLOCK / REQUEST CHANGES > NEEDS DISCUSSION > non-blocking. If the gate outcome is BLOCK / REQUEST CHANGES or NEEDS DISCUSSION, the Final Recommendation must state the specific governing reason(s).
+
 ## Final output format
 
 Output the review using EXACTLY this structure:
@@ -112,7 +128,7 @@ Output the review using EXACTLY this structure:
 
 ## Review Status
 APPROVE / REQUEST CHANGES / NEEDS DISCUSSION
-(REQUEST CHANGES if any Critical or High finding exists; NEEDS DISCUSSION if key facts could not be verified or a decision is ambiguous)
+(Determined by the Review Gate: REQUEST CHANGES if any Critical/High finding or failed CI/check exists; NEEDS DISCUSSION if any Medium finding, pending CI/check, or unverifiable critical data exists; otherwise APPROVE)
 
 ## Blocking Findings
 (Critical findings only; if none, state "None.")
@@ -136,11 +152,13 @@ APPROVE / REQUEST CHANGES / NEEDS DISCUSSION
 (what the PR does well)
 
 ## Final Recommendation
+(Must be consistent with the Review Gate result — state BLOCK / REQUEST CHANGES, NEEDS DISCUSSION, or APPROVE and the governing reason)
 
 ---
 
 ### Summary
 - Total findings by severity: Critical X, High X, Medium X, Low X, Informational X
 - Blocker present: Yes / No
+- Review Gate result: PASSED / NEEDS DISCUSSION / BLOCKED
 - Ready to merge: Yes / No (after addressing blockers) / Needs discussion
 ```

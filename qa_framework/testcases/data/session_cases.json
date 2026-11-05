@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "environments": ["local", "dedicated_test_server"],
+  "cases": [
+    {"id": "SESSION-JOIN-VALID", "token_state": "valid", "network": "stable", "expected": "join_success"},
+    {"id": "SESSION-TOKEN-EXPIRED", "token_state": "expired", "network": "stable", "expected": "join_rejected_with_reauthentication_path"},
+    {"id": "SESSION-TOKEN-MALFORMED", "token_state": "malformed", "network": "stable", "expected": "join_rejected_without_crash"},
+    {"id": "SESSION-DROP-DURING-PLAY", "token_state": "valid", "network": "interrupt_then_restore", "expected": "disconnect_reported_and_recovery_matches_design"},
+    {"id": "SESSION-REJOIN-DUPLICATE", "token_state": "valid", "network": "rejoin_same_session", "expected": "single_player_membership_and_no_duplicate_rewards"},
+    {"id": "SESSION-RESTART-PERSIST", "token_state": "valid", "network": "stable", "restart_client": true, "expected": "only_documented_progress_persists"}
+  ]
+}

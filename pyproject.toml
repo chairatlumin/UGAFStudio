@@ -1,11 +1,63 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "ugaf-studio"
 version = "0.1.0"
 requires-python = ">=3.14"
+dependencies = [
+    "pynput>=1.8.2",
+    "PySide6>=6.7.0",
+    "numpy>=2.0",
+    "opencv-python>=4.10",
+    "mss>=9.0",
+    "loguru>=0.7",
+    "pytesseract>=0.3.10",
+    "psutil>=6.0.0",
+    "openpyxl>=3.1.5",
+    "mcp>=1.0.0",
+    "fastmcp>=2.0.0",
+    "python-docx>=1.1.0",
+]
+
+[project.optional-dependencies]
+build = [
+    "pyinstaller>=6.0",
+]
+robot = [
+    "robotframework>=7.3,<8",
+    "pyautogui>=0.9.54",
+    "pillow>=10.0",
+]
+
+[project.scripts]
+ugaf-robot = "qa_framework.robot.cli:main"
+ugaf-decision-api = "qa_framework.robot.decision_api:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*", "qa_framework*", "scripts*", "tools*"]
+exclude = ["tests*", "build*", "dist*", "docs*", "reports*", "screenshots*"]
+namespaces = true
+
+[tool.setuptools.package-data]
+qa_framework = ["testcases/*.json", "robot/examples/*.robot"]
+scripts = ["game_profiles.json"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py314"
+target-version = "py313" # ponytail: py314 triggers ruff 0.16.5 `except (A,B):` -> `except A, B:` panic; re-bump to py314 after ruff fixes
+exclude = [
+    ".ai",
+    ".opencode",
+    ".git",
+    "__pycache__",
+    "node_modules",
+    ".venv",
+    "NEXT_SPRINT_PLAN.md", # ponytail: ruff format panics on NEXT_SPRINT_PLAN.md code blocks (>3kB annotation range)
+    "\\.md",
+]
 
 [tool.ruff.lint]
 select = [

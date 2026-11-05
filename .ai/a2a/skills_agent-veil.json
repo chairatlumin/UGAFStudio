@@ -1,0 +1,218 @@
+{
+  "actions": {
+    "1.0.0.00000|—|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "1.0.0.00000|—e|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "1.0.0.00000|cose|exit|sling.|—|b382d4b25493be78481db4e19448fe10": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "1.0.0.00000|exik|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "1.0.0.00000|—a|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "1.0.0.00000|exit|——|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "key_press",
+      "params": {}
+    },
+    "1.0.0.00000|exit|setting.|b382d4b25493be78481db4e19448fe10": {
+      "action": "key_press",
+      "params": {}
+    },
+    "1.0.0.00000|a|b382d4b25493be78481db4e19448fe10": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "1.0.0.00000|exit|setting:|son:|—|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "4.0.0.00000|—e|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    ",|1.0.0.00000|exit|—|b14889168672c0e5b44e1146f40835a8": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "1.0.0.00000|ea|exit|getkiag|mo|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "1.0.0.00000|exit|setting|—a|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "1.0.0.00000|——|b382d4b25493be78481db4e19448fe10": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "1.0.0.00000|a|exit|setting:|——ae|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "4.0.0.00000|——e|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "4.0.0.00000|—ee|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    "1.0.0.00000|exit|or,|setting:|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    ".—e|1.0.0.00000|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    },
+    ".|1.0.0.00000|exit|setting|—e|78ef691d260a3af023287eeb7e2df7ca": {
+      "action": "click",
+      "params": {
+        "button": "left"
+      }
+    }
+  },
+  "stats": {
+    "1.0.0.00000|—|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 2
+    },
+    "1.0.0.00000|b382d4b25493be78481db4e19448fe10": {
+      "good": 2,
+      "bad": 2
+    },
+    "1.0.0.00000|—e|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 1,
+      "bad": 0
+    },
+    "1.0.0.00000|cose|exit|sling.|—|b382d4b25493be78481db4e19448fe10": {
+      "good": 0,
+      "bad": 1
+    },
+    "1.0.0.00000|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 2
+    },
+    "1.0.0.00000|exik|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 1
+    },
+    "1.0.0.00000|—a|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 2
+    },
+    "1.0.0.00000|exit|——|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 2
+    },
+    "1.0.0.00000|exit|setting.|b382d4b25493be78481db4e19448fe10": {
+      "good": 1,
+      "bad": 0
+    },
+    "1.0.0.00000|a|b382d4b25493be78481db4e19448fe10": {
+      "good": 0,
+      "bad": 1
+    },
+    "1.0.0.00000|exit|setting:|son:|—|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 1
+    },
+    "4.0.0.00000|—e|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 1,
+      "bad": 0
+    },
+    ",|1.0.0.00000|exit|—|b14889168672c0e5b44e1146f40835a8": {
+      "good": 1,
+      "bad": 0
+    },
+    "1.0.0.00000|—a|b14889168672c0e5b44e1146f40835a8": {
+      "good": 1,
+      "bad": 0
+    },
+    "1.0.0.00000|ea|exit|getkiag|mo|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 1
+    },
+    "1.0.0.00000|exit|setting|—a|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 1
+    },
+    "1.0.0.00000|——|b382d4b25493be78481db4e19448fe10": {
+      "good": 1,
+      "bad": 0
+    },
+    "1.0.0.00000|a|exit|setting:|——ae|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 1
+    },
+    "4.0.0.00000|——e|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 1
+    },
+    "4.0.0.00000|—ee|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 1
+    },
+    "1.0.0.00000|exit|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 1
+    },
+    "1.0.0.00000|exit|or,|setting:|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 1
+    },
+    ".—e|1.0.0.00000|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 1
+    },
+    ".|1.0.0.00000|exit|setting|—e|78ef691d260a3af023287eeb7e2df7ca": {
+      "good": 0,
+      "bad": 1
+    }
+  }
+}

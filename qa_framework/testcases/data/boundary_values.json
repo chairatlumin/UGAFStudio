@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "purpose": "Synthetic input values for player names, chat, search, and profile fields.",
+  "cases": [
+    {"id": "INPUT-EMPTY", "value": "", "class": "empty", "expected": "Reject or apply the documented default; never crash."},
+    {"id": "INPUT-MIN-1", "value": "A", "class": "minimum", "expected": "Accept only if the documented minimum length permits one character."},
+    {"id": "INPUT-ASCII-32", "value": "Player_012345678901234567890123", "class": "boundary", "expected": "Apply the documented maximum length consistently."},
+    {"id": "INPUT-ASCII-33", "value": "Player_0123456789012345678901234", "class": "over-boundary", "expected": "Reject or truncate according to product rules without UI overflow."},
+    {"id": "INPUT-UNICODE", "value": "玩家_กาแฟ_🎮", "class": "unicode", "expected": "Render, persist, and compare supported Unicode consistently."},
+    {"id": "INPUT-RTL", "value": "لاعب_123", "class": "right-to-left", "expected": "Text remains readable and input direction is handled safely."},
+    {"id": "INPUT-WHITESPACE", "value": "  Player Name  ", "class": "whitespace", "expected": "Trim or preserve whitespace according to documented rules."},
+    {"id": "INPUT-MARKUP", "value": "<b>Player</b>", "class": "markup-like", "expected": "Display as safe text; do not interpret user text as markup."},
+    {"id": "INPUT-CONTROL", "value": "line1\nline2\ttab", "class": "control-characters", "expected": "Reject or normalize unsupported control characters without breaking layout."}
+  ]
+}

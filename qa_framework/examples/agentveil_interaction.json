@@ -1,0 +1,29 @@
+{
+  "name": "Agent Veil menu to gameplay interaction",
+  "steam_root": "D:/SteamLibrary",
+  "executable_name": "AgentVeil.exe",
+  "timeout": 45,
+  "capture_delay": 20,
+  "actions": [
+    {"action": "press", "key": "enter"},
+    {"action": "wait", "seconds": 5},
+    {"action": "press", "key": "enter"},
+    {"action": "wait", "seconds": 8},
+    {"action": "interact", "key": "e"},
+    {"action": "wait", "seconds": 3},
+    {"action": "move", "direction": "forward", "seconds": 3},
+    {"action": "look", "dx": 180, "dy": 0},
+    {"action": "move", "direction": "right", "seconds": 2},
+    {"action": "interact", "key": "e"},
+    {"action": "wait", "seconds": 8}
+  ],
+  "assertions": [
+    {
+      "name": "gameplay frame is visible",
+      "check": "color_detected",
+      "color": [30, 30, 30],
+      "tolerance": 70
+    }
+  ],
+  "screenshot_dir": "screenshots/agentveil_interaction"
+}

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import tempfile
+from datetime import datetime, timedelta, timezone
 
 from qa_framework.a2a_adapter import (
     A2AAdapter,
@@ -13,6 +14,7 @@ from qa_framework.a2a_adapter import (
     ConfidenceScorer,
     ConsensusDispatcher,
     DispatchEvaluator,
+    DispatchMemory,
     OutputValidator,
     ParallelDispatcher,
     PermissionRegistry,
@@ -654,6 +656,51 @@ def test_parallel_dispatcher_concurrent_speedup():
     elapsed = time.time() - start
     assert len(results) == 4
     assert elapsed < 0.6
+
+
+# --- DispatchMemory tests ---
+
+def test_dispatch_memory_records_outcome():
+    mem = DispatchMemory()
+    mem.record("agent-a", "coding", True, score=4.0)
+    recs = mem.get_records("agent-a", "coding")
+    assert len(recs) == 1
+    assert recs[0]["success"] is True
+    assert recs[0]["score"] == 4.0
+
+
+def test_dispatch_memory_weighted_score():
+    mem = DispatchMemory()
+    old_ts = (datetime.now(timezone.utc) - timedelta(days=14)).isoformat()
+    mem.record("agent-a", "coding", True, score=5.0, timestamp=old_ts)
+    mem.record("agent-a", "coding", False, score=1.0)
+    recs = mem.get_records("agent-a", "coding")
+    assert len(recs) == 2
+
+
+def test_dispatch_memory_recommendation():
+    mem = DispatchMemory()
+    mem.record("agent-a", "coding", True, score=5.0)
+    mem.record("agent-a", "coding", True, score=4.0)
+    mem.record("agent-b", "coding", True, score=2.0)
+    recs = mem.recommend("coding", candidates=["agent-a", "agent-b"])
+    assert len(recs) == 2
+    assert recs[0]["agent_id"] == "agent-a"
+
+
+def test_dispatch_memory_empty_recommendation():
+    mem = DispatchMemory()
+    recs = mem.recommend("unknown_task", candidates=["agent-a"])
+    assert recs == []
+
+
+def test_dispatch_memory_persistence(tmp_path):
+    path = str(tmp_path / "dispatch_mem.json")
+    mem = DispatchMemory(storage_path=path)
+    mem.record("agent-a", "coding", True, score=4.5)
+    mem2 = DispatchMemory(storage_path=path)
+    recs = mem2.get_records("agent-a", "coding")
+    assert len(recs) == 1
 
 
 # --- DispatchEvaluator tests ---

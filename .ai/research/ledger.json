@@ -1,0 +1,14 @@
+{
+  "hypotheses": [],
+  "gate_outcomes": {
+    "check1": {
+      "gate": "check1",
+      "passed": true,
+      "evidence": "gate=check1 operator=GT actual=11 expected=10",
+      "timestamp": null
+    }
+  },
+  "failure_constraints": [],
+  "evidence_pointers": {},
+  "research_trajectory": []
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "ugafstudio-qa": {
+      "type": "local",
+      "command": [
+        "C:/Python314/python.exe",
+        "C:/Users/Admin/UGAFStudio/scripts/ugaf_mcp.py"
+      ],
+      "enabled": true
+    }
+  }
+}

@@ -2,23 +2,15 @@
 
 from __future__ import annotations
 
-import sqlite3
-import tempfile
-from pathlib import Path
-
 import pytest
 
 from qa_framework.consensus_validator import (
-    Challenge,
-    ConsensusResult,
+    REPUTATION_INIT,
     ConsensusValidator,
     Proposal,
     QAOutcome,
     QAResult,
-    REPUTATION_INIT,
-    VoteTally,
 )
-
 
 # === Fixtures ===
 

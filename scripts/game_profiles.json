@@ -1,0 +1,99 @@
+{
+  "agent-veil": {
+    "window_title": "Agent Veil",
+    "game_type": "menu",
+    "strategy": "menu_nav",
+    "menu_keywords": [
+      "tutorial",
+      "setting",
+      "settings",
+      "exit",
+      "play",
+      "start",
+      "lobby",
+      "create",
+      "join",
+      "continue",
+      "cancel",
+      "back",
+      "close",
+      "yes",
+      "no",
+      "confirm",
+      "name",
+      "host",
+      "room",
+      "code"
+    ],
+    "ocr_min_conf": 60,
+    "exe_path": "D:/SteamLibrary/steamapps/common/AgentVeilDemo/AgentVeil.exe"
+  },
+  "shinebringers": {
+    "window_title": "SHINEBRINGERS",
+    "game_type": "action",
+    "strategy": "realtime_flick",
+    "menu_keywords": [],
+    "ocr_min_conf": 40,
+    "exe_path": "D:/SteamLibrary/steamapps/common/SHINEBRINGERS Demo/SwishAndFlickDemo.exe"
+  },
+  "unforgettable-love": {
+    "window_title": "Unforgettable Love",
+    "game_type": "visual_novel",
+    "strategy": "vn_advance",
+    "menu_keywords": [
+      "next",
+      "skip",
+      "save",
+      "load",
+      "settings",
+      "choice",
+      "yes",
+      "no"
+    ],
+    "ocr_min_conf": 55,
+    "exe_path": "D:/SteamLibrary/steamapps/common/Unforgettable Love/Unforgettable_Love.exe"
+  },
+  "highschoolblood-demo": {
+    "window_title": "High School Blood [ Demo ]",
+    "game_type": "fmv_visual_novel",
+    "strategy": "fmv_passive",
+    "menu_keywords": [
+      "continue",
+      "new game",
+      "play",
+      "start",
+      "choice",
+      "settings",
+      "back",
+      "main menu",
+      "help the teacher",
+      "don't help",
+      "go somewhere else"
+    ],
+    "ocr_min_conf": 50,
+    "exe_path": "D:/SteamLibrary/steamapps/common/High School Blood Demo/HighSchoolBloodDemo.exe",
+    "steam_app_id": "5173380",
+    "observed_steam_build_id": "25325884",
+    "requires_eula_ack": true,
+    "menu_ocr_region": [0.0625, 0.5, 0.3021, 0.4167],
+    "agent_guidance": "This is a full-motion-video narrative game. Let video scenes play without clicking or pressing keys. Use noop while video is playing or when no clear test action is visible. Do not skip, seek, select a story branch, overwrite a save, or exit unless the active QA scenario explicitly requires it. If a consequential choice is visible and the scenario does not specify the expected branch, stop and request human review."
+  },
+  "little-nightmares": {
+    "window_title": "Little Nightmares",
+    "game_type": "horror_platformer",
+    "strategy": "platformer_stealth",
+    "menu_keywords": [
+      "continue",
+      "new game",
+      "play",
+      "settings",
+      "resume",
+      "restart",
+      "checkpoint",
+      "quit"
+    ],
+    "ocr_min_conf": 45,
+    "requires_manual_launch": true,
+    "agent_guidance": "Horror platformer profile inspired by Little Nightmares. Attach only after the user launches the game and the window title is confirmed. Use one short discrete action at a time. Before jumping, grabbing, or crossing a ledge, identify the player footing, landing area, and nearby hazard from the visible frame; if any are unclear, use noop. Do not repeat movement into an unseen edge or patrol. Treat hiding, chase, death, and checkpoint transitions as distinct states and capture evidence after each configured step. Never infer a successful jump, stealth pass, or checkpoint from motion alone."
+  }
+}

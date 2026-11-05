@@ -4,9 +4,11 @@ from pathlib import Path
 from typing import Any
 
 from loguru import logger
+from app.core.paths import writable_path
 
-LOG_DIR = Path("logs")
-LOG_DIR.mkdir(exist_ok=True)
+
+LOG_DIR = writable_path("logs")
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 logger.remove()
 

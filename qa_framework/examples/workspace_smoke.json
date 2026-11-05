@@ -1,0 +1,30 @@
+{
+  "name": "UGAF Workspace Smoke Checks",
+  "tests": [
+    {
+      "name": "Project workspace is ready",
+      "steps": [
+        {
+          "name": "project context exists",
+          "check": "file_exists",
+          "path": "../../PROJECT_CONTEXT.md"
+        },
+        {
+          "name": "QA framework exists",
+          "check": "directory_exists",
+          "path": ".."
+        }
+      ]
+    },
+    {
+      "name": "Engine compatibility",
+      "steps": [
+        {
+          "name": "Unreal version is supported",
+          "check": "engine_version_supported",
+          "version": "5.8"
+        }
+      ]
+    }
+  ]
+}

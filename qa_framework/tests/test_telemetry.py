@@ -1,8 +1,6 @@
 """Tests for telemetry.py — TelemetryProvider, BudgetEnforcer, SpanHierarchy."""
 
-import time
 
-import pytest
 
 from qa_framework.telemetry import (
     BudgetEnforcer,

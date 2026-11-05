@@ -20,6 +20,7 @@ from qa_framework.consensus_validator import (
     QAResult,
     VoteTally,
 )
+from qa_framework.fleet_monitor import FleetMonitor, FleetRecorder
 from qa_framework.graph_memory import GraphMemoryStore
 from qa_framework.intent_scanner import (
     Finding,
@@ -27,6 +28,7 @@ from qa_framework.intent_scanner import (
     ScanResult,
 )
 from qa_framework.memory_compactor import MemoryCompactor, MemoryTier
+from qa_framework.qa_evaluator import QAEvaluator, QAEvaluatorVerdict
 from qa_framework.reliability_tracker import DispatchOutcome, ReliabilityMetrics, ReliabilityTracker
 from qa_framework.pbft_consensus import (
     PBFTMessage,
@@ -105,4 +107,10 @@ __all__ = [
     "ValidationResult",
     "MemoryCompactor",
     "MemoryTier",
+    # Fleet Monitor
+    "FleetMonitor",
+    "FleetRecorder",
+    # QA Evaluator
+    "QAEvaluator",
+    "QAEvaluatorVerdict",
 ]

@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "description": "Engine-neutral game QA scenarios. Bind controls, setup, and assertions to each game's design.",
+  "testcases": [
+    {
+      "id": "CORE-001",
+      "title": "Cold launch reaches a usable first screen",
+      "category": "smoke",
+      "applies_to": ["all games"],
+      "priority": "P0",
+      "setup": ["Close prior game process", "Start from a clean test profile when supported"],
+      "steps": ["Launch the packaged game", "Wait for the first stable menu or playable screen"],
+      "expected": ["Process remains alive through startup", "A configured stable UI label or visual anchor is detected", "Screenshot and run report are saved"],
+      "automation": "starter_suite.json"
+    },
+    {
+      "id": "CORE-002",
+      "title": "Primary navigation responds to configured input",
+      "category": "input",
+      "applies_to": ["all games"],
+      "priority": "P1",
+      "setup": ["Reach a screen with a known focusable control", "Configure the game's confirm and navigation keys"],
+      "steps": ["Move focus once", "Confirm the selected control", "Wait for the expected next screen"],
+      "expected": ["Input changes focus or screen state", "Expected destination text or visual anchor appears"],
+      "data": "data/boundary_values.json"
+    },
+    {
+      "id": "CORE-003",
+      "title": "Pause and resume preserve a valid session",
+      "category": "state", "applies_to": ["all games"], "priority": "P1",
+      "setup": ["Enter a safe playable state", "Configure pause and resume controls"],
+      "steps": ["Open pause state", "Verify pause indicator", "Resume", "Verify gameplay UI returns"],
+      "expected": ["Pause state is visible", "Resume returns to the active session without a crash"]
+    },
+    {
+      "id": "CORE-004",
+      "title": "Window focus loss and regain do not corrupt input state",
+      "category": "stability", "applies_to": ["all games"], "priority": "P2",
+      "setup": ["Enter a safe state", "Use an external focus-switch step if required"],
+      "steps": ["Switch focus away and back", "Send a known harmless input"],
+      "expected": ["Game remains responsive", "No stuck movement or held key is observed"]
+    },
+    {
+      "id": "CORE-005",
+      "title": "Restart returns to a valid initial state",
+      "category": "recovery", "applies_to": ["all games"], "priority": "P1",
+      "setup": ["Reach a safe checkpoint or menu", "Configure restart flow"],
+      "steps": ["Restart using the supported in-game flow", "Wait for the initial state"],
+      "expected": ["Expected initial UI is restored", "Run can continue without stale or duplicated state"]
+    },
+    {
+      "id": "RPG-001",
+      "title": "Inventory capacity and item boundaries",
+      "category": "inventory", "applies_to": ["RPG", "action RPG", "survival"], "priority": "P1",
+      "steps": ["Open inventory", "Add items up to the documented limit", "Attempt one additional item", "Remove one item and retry"],
+      "expected": ["Capacity is enforced", "Rejected item remains available or has a clear failure result", "Freed capacity accepts the next item"],
+      "data": "data/economy_cases.json"
+    },
+    {
+      "id": "ACTION-001",
+      "title": "Movement, camera bounds, and collision smoke",
+      "category": "movement", "applies_to": ["action", "platformer", "racing", "adventure", "shooter"], "priority": "P1",
+      "steps": ["Move in each supported direction", "Rotate camera within normal bounds", "Move against a nearby solid boundary"],
+      "expected": ["Character or vehicle responds to mapped controls", "Camera remains within expected limits", "Movement does not pass through the configured collision boundary"]
+    },
+    {
+      "id": "HORROR-PLATFORMER-001",
+      "title": "Platform traversal, footing, and ledge recovery",
+      "category": "platformer_traversal",
+      "applies_to": ["horror_platformer", "platformer", "Little Nightmares style"],
+      "priority": "P1",
+      "setup": ["Use a repeatable checkpoint", "Document movement, jump, grab, and crouch controls", "Identify a safe ledge/traversal segment"],
+      "steps": ["Capture the player footing and next landing surface", "Issue one short movement or jump action", "Verify landing/grounded state using an approved game oracle or visible evidence", "Repeat at a configured ledge and recover from one controlled fall"],
+      "expected": ["The character lands only on reachable surfaces", "No input is sent when footing or hazard state is ambiguous", "A fall returns to the configured checkpoint", "Every transition has screenshot or Unreal telemetry evidence"],
+      "status": "DRAFT",
+      "automation": "requires_platformer_state_oracle"
+    },
+    {
+      "id": "HORROR-PLATFORMER-002",
+      "title": "Stealth hiding and patrol exposure",
+      "category": "stealth_state",
+      "applies_to": ["horror_platformer", "Little Nightmares style"],
+      "priority": "P1",
+      "setup": ["Use a repeatable patrol encounter", "Document the hiding control and exposed/hidden oracle"],
+      "steps": ["Observe patrol position and route", "Enter a configured hiding spot", "Wait for the patrol to pass", "Exit only after the case-defined safe condition is observed"],
+      "expected": ["The player remains hidden during the configured exposure window", "The patrol does not detect the player while the approved hidden state is active", "An ambiguous patrol or hiding state produces no movement input"],
+      "status": "DRAFT",
+      "automation": "requires_platformer_state_oracle"
+    },
+    {
+      "id": "PUZZLE-001",
+      "title": "Puzzle interaction and reset behavior",
+      "category": "puzzle", "applies_to": ["puzzle", "adventure", "escape room"], "priority": "P1",
+      "steps": ["Interact with a known puzzle object", "Submit one valid and one invalid answer", "Reset or leave and re-enter the puzzle"],
+      "expected": ["Valid action advances the puzzle", "Invalid action does not grant completion", "Reset state matches the game's documented rules"]
+    },
+    {
+      "id": "SIM-001",
+      "title": "Simulation settings persist after reopening",
+      "category": "persistence", "applies_to": ["simulation", "management", "strategy"], "priority": "P2",
+      "steps": ["Change a reversible setting", "Close and reopen settings", "Restart the game if persistence is expected"],
+      "expected": ["Setting remains at the expected value and is visible after reopening"]
+    },
+    {
+      "id": "RACE-001",
+      "title": "Race start, lap progression, and finish state",
+      "category": "progression", "applies_to": ["racing", "sports"], "priority": "P1",
+      "steps": ["Start a short test event", "Complete a lap or configured segment", "Finish or abandon the event"],
+      "expected": ["Progress indicator advances", "Finish state appears once", "Result screen reflects the run outcome"]
+    },
+    {
+      "id": "VN-001",
+      "title": "Dialogue advance, choice selection, and save/load",
+      "category": "branching", "applies_to": ["visual novel", "narrative adventure"], "priority": "P1",
+      "steps": ["Advance dialogue", "Select each branch in separate clean runs", "Save, return to title, and load the save"],
+      "expected": ["Dialogue advances once per input", "Selected branch is reflected in subsequent text", "Loaded state matches saved chapter and choice state"],
+      "data": "data/session_cases.json"
+    },
+    {
+      "id": "FMV-FLOW-001",
+      "title": "Follow an approved FMV story branch to its expected destination",
+      "category": "fmv_flow",
+      "applies_to": ["FMV", "fmv_visual_novel"],
+      "priority": "P1",
+      "setup": ["Select a known starting save or chapter", "Record the target build and locale", "Use only a choice with an approved expected destination"],
+      "steps": ["Play until the configured choice appears", "Capture the visible choice options", "Select the case-defined option", "Wait for the next stable scene"],
+      "expected": ["The selected option is recorded", "The resulting scene matches the configured destination", "No unrelated branch is entered"],
+      "status": "DRAFT",
+      "automation": "requires_scene_or_branch_assertion"
+    },
+    {
+      "id": "FMV-SUBTITLE-001",
+      "title": "Verify an FMV subtitle against its approved cue and time range",
+      "category": "subtitle_localization",
+      "applies_to": ["FMV", "fmv_visual_novel", "visual novel"],
+      "priority": "P1",
+      "setup": ["Provide the approved subtitle text/key and cue time range", "Set the target locale and display resolution"],
+      "steps": ["Play the clip through the cue start and end", "Capture frames while the subtitle is visible", "Compare displayed text and timing with the approved cue"],
+      "expected": ["The expected text is visible in the target locale", "The cue appears and disappears within configured timing tolerance", "Text is not clipped or overlapped by another subtitle"],
+      "status": "DRAFT",
+      "automation": "ocr_and_timing_with_visual_review"
+    },
+    {
+      "id": "FMV-MINIGAME-001",
+      "title": "Complete a configured FMV mini-game and verify its outcome",
+      "category": "minigame",
+      "applies_to": ["FMV", "fmv_visual_novel"],
+      "priority": "P1",
+      "setup": ["Document the mini-game rules, controls, time limit, and expected success state", "Use a repeatable starting point where available"],
+      "steps": ["Wait for the mini-game prompt", "Perform the case-defined input sequence", "Observe the resulting success or failure state"],
+      "expected": ["Inputs follow the configured controls", "The mini-game ends within the documented time limit", "The resulting game state matches the expected outcome"],
+      "status": "DRAFT",
+      "automation": "requires_game_specific_strategy"
+    },
+    {
+      "id": "FMV-PLAYBACK-001",
+      "title": "Check FMV playback continuity and transition to the next scene",
+      "category": "fmv_playback",
+      "applies_to": ["FMV", "fmv_visual_novel"],
+      "priority": "P1",
+      "setup": ["Record the expected clip and next scene IDs", "Use the intended playback resolution"],
+      "steps": ["Start the configured clip", "Allow passive playback to the transition", "Observe playback and the first stable frame of the next scene"],
+      "expected": ["Playback advances without a sustained frozen or black frame", "The expected next scene appears", "No unconfigured input skips a choice or changes the branch"],
+      "status": "DRAFT",
+      "automation": "requires_scene_and_frame_assertions"
+    },
+    {
+      "id": "MULTI-001",
+      "title": "Session join, disconnect, and reconnect",
+      "category": "network", "applies_to": ["multiplayer", "co-op", "live service"], "priority": "P0",
+      "setup": ["Use isolated test server and test accounts", "Record session and build identifiers"],
+      "steps": ["Join a session", "Disconnect using a controlled network interruption", "Reconnect or rejoin", "Repeat with expired or invalid session data"],
+      "expected": ["Valid session can be joined", "Disconnect state is communicated", "Reconnect follows documented recovery rules", "Invalid session is rejected without corrupting account state"],
+      "data": "data/session_cases.json"
+    },
+    {
+      "id": "ECON-001",
+      "title": "Purchase and reward accounting boundaries",
+      "category": "economy", "applies_to": ["games with currency, rewards, or shop"], "priority": "P0",
+      "setup": ["Use disposable test account and deterministic backend fixtures"],
+      "steps": ["Attempt purchase with exact balance", "Attempt purchase one unit above balance", "Repeat a reward claim request"],
+      "expected": ["Valid purchase updates balance and inventory exactly once", "Insufficient balance purchase is rejected", "Repeated reward claim does not duplicate grant"],
+      "data": "data/economy_cases.json"
+    }
+  ]
+}

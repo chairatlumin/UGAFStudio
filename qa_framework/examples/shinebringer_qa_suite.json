@@ -1,0 +1,59 @@
+{
+  "name": "Shinebringer Demo QA Suite",
+  "timeout": 120.0,
+  "capture_delay": 2.0,
+  "executable_name": "SwishAndFlick/Binaries/Win64/SwishAndFlickDemo.exe",
+  "monitor_index": 1,
+  "screenshot_dir": "screenshots/shinebringer_qa",
+  "steam_root": "D:/SteamLibrary",
+  "tests": [
+    {
+      "name": "steam install directory exists",
+      "steps": [
+        {
+          "name": "install dir exists",
+          "check": "directory_exists",
+          "path": "D:/SteamLibrary"
+        },
+        {
+          "name": "game executable present",
+          "check": "executable_count",
+          "path": "D:/SteamLibrary",
+          "expected": 1
+        }
+      ]
+    },
+    {
+      "name": "renders non-black frame after startup",
+      "steps": [
+        {
+          "name": "color detected after launch",
+          "check": "color_detected",
+          "color": [70, 67, 65],
+          "tolerance": 45
+        }
+      ]
+    },
+    {
+      "name": "main menu screen detected via color",
+      "steps": [
+        {
+          "name": "menu color present",
+          "check": "color_detected",
+          "color": [60, 120, 200],
+          "tolerance": 40
+        }
+      ]
+    },
+    {
+      "name": "Play button text visible in menu",
+      "steps": [
+        {
+          "name": "ocr contains Play",
+          "check": "ocr_contains",
+          "text": "Play"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "Build Smoke Checks",
+  "tests": [
+    {
+      "name": "Build directory is present",
+      "steps": [
+        {
+          "name": "build folder exists",
+          "check": "directory_exists",
+          "path": "build"
+        },
+        {
+          "name": "exactly one game executable exists",
+          "check": "executable_count",
+          "path": "build",
+          "expected": 1
+        }
+      ]
+    },
+    {
+      "name": "Engine compatibility",
+      "steps": [
+        {
+          "name": "Unreal version is supported",
+          "check": "engine_version_supported",
+          "version": "5.8"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+You are Hermes, working alongside another agent (ox-alpha) on the UGAFStudio repo at C:\Users\Admin\UGAFStudio (branch hermes/gameplay-qa-hardening).
+
+Your scoped task (from .ai/RESULT.md follow-ups): resolve the "ruff format ." panic issue (ruff 0.16.1 panics on large qa_framework files over ~3000 bytes).
+
+Do EXACTLY this:
+1. Reproduce: run "C:\Python314\python.exe -m ruff format . --check" and capture which file triggers the panic.
+2. Preferred fix WITHOUT changing tool versions: add scripts/format_all.py (runnable via "C:\Python314\python.exe scripts/format_all.py") that runs ruff format per-file across app/, qa_framework/, tests/, scripts/ so one panicking invocation never blocks the rest, exits nonzero if any single file fails, and prints a per-file summary. Verify every repo Python file individually passes "ruff format --check" through your script.
+3. Optionally ALSO test whether a newer ruff fixes the panic: install to user site only ("C:\Python314\python.exe -m pip install --user -U ruff"), re-test "ruff format . --check". Only KEEP the upgrade if these gates all pass afterward: pytest tests/ -q (expect 137 passed), ruff check ., mypy qa_framework app (all via C:\Python314\python.exe). If anything fails, downgrade back ("pip install --user ruff==0.16.1") and rely on the per-file script.
+4. If a pre-commit config exists in the repo root, wire the per-file formatter into it; otherwise skip.
+
+HARD CONSTRAINTS:
+- Do NOT touch: qa_framework/examples/** (any .json), app/vision/**, qa_framework/gameplay/**, tests/**, .ai/**
+- Do NOT launch any games or Steam processes (the other agent is running live QA right now).
+- Do NOT commit, push, or merge.
+- Do NOT edit .ai/PLAN.md, .ai/RESULT.md, .ai/REVIEW.md (the other agent consolidates them).
+- Use interpreter C:\Python314\python.exe with PYTHONPATH=C:\Users\Admin\UGAFStudio for everything.
+
+Finish by reporting: exact commands you ran, their results, which fix you kept, and final gate status.

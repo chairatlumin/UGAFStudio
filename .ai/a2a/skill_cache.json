@@ -1,0 +1,138 @@
+{
+  "1.0.0.00000": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|—": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|creat|looby|—ee|b382d4b25493be78481db4e19448fe10": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|exit|——a|b382d4b25493be78481db4e19448fe10": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|creat|looby|——|b382d4b25493be78481db4e19448fe10": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|exit|sebung|v.,|b382d4b25493be78481db4e19448fe10": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|exit|—a|78ef691d260a3af023287eeb7e2df7ca": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|78ef691d260a3af023287eeb7e2df7ca": {
+    "action": "click",
+    "params": {
+      "button": "left"
+    }
+  },
+  "1.0.0.00000|exit|——|78ef691d260a3af023287eeb7e2df7ca": {
+    "action": "click",
+    "params": {
+      "button": "left"
+    }
+  },
+  "1.0.0.00000|cfea|exit|reseny|——e|78ef691d260a3af023287eeb7e2df7ca": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|b382d4b25493be78481db4e19448fe10": {
+    "action": "click",
+    "params": {}
+  },
+  "-|1.0.0.00000|exit|setting|tutorial|——|78ef691d260a3af023287eeb7e2df7ca": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|46c3e16522db8c86025f1438a1e9baa4": {
+    "action": "click",
+    "params": {
+      "button": "left"
+    }
+  },
+  "1.0.0.00000|exit|—ae|78ef691d260a3af023287eeb7e2df7ca": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|——|78ef691d260a3af023287eeb7e2df7ca": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|eeg.|en|exit|se|——e|78ef691d260a3af023287eeb7e2df7ca": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|—a|78ef691d260a3af023287eeb7e2df7ca": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|—|b382d4b25493be78481db4e19448fe10": {
+    "action": "click",
+    "params": {
+      "button": "left"
+    }
+  },
+  "1.0.0.00000|exit|—a|b382d4b25493be78481db4e19448fe10": {
+    "action": "click",
+    "params": {
+      "button": "left"
+    }
+  },
+  "1.0.0.00000|—ea-|b382d4b25493be78481db4e19448fe10": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|a|b382d4b25493be78481db4e19448fe10": {
+    "action": "click",
+    "params": {
+      "button": "left"
+    }
+  },
+  "1.0.0.00000|a|y\"|e4f71ccf6aa70dffa7e8baea5ffd11d5": {
+    "action": "key_press",
+    "params": {}
+  },
+  "4.0.0.0000|a|b382d4b25493be78481db4e19448fe10": {
+    "action": "click",
+    "params": {
+      "button": "left"
+    }
+  },
+  "1.0.0.00000|exit|——a|78ef691d260a3af023287eeb7e2df7ca": {
+    "action": "key_press",
+    "params": {}
+  },
+  "4.0.0.00000|a|78ef691d260a3af023287eeb7e2df7ca": {
+    "action": "click",
+    "params": {
+      "button": "left"
+    }
+  },
+  "1.0.0.00000|—a|“creabhoshy:|78ef691d260a3af023287eeb7e2df7ca": {
+    "action": "click",
+    "params": {
+      "button": "left"
+    }
+  },
+  "1.0.0.00000|—a|b382d4b25493be78481db4e19448fe10": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|exit|——ee|b382d4b25493be78481db4e19448fe10": {
+    "action": "key_press",
+    "params": {}
+  },
+  "1.0.0.00000|exit|22f6a1c4f7cc566386f0e8e25568b69d": {
+    "action": "click",
+    "params": {
+      "button": "left"
+    }
+  }
+}

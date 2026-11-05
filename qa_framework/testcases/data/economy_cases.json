@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "currency": "TEST_CURRENCY",
+  "cases": [
+    {"id": "ECON-ZERO", "balance": 0, "price": 1, "quantity": 1, "expected": "purchase_rejected_no_balance"},
+    {"id": "ECON-EXACT", "balance": 100, "price": 100, "quantity": 1, "expected": "purchase_succeeds_balance_zero_inventory_plus_one"},
+    {"id": "ECON-SHORT-1", "balance": 99, "price": 100, "quantity": 1, "expected": "purchase_rejected_balance_unchanged"},
+    {"id": "ECON-MULTI", "balance": 100, "price": 25, "quantity": 4, "expected": "purchase_succeeds_balance_zero_inventory_plus_four"},
+    {"id": "ECON-OVERFLOW", "balance": 2147483647, "price": 1, "quantity": 2147483647, "expected": "reject_overflow_or_apply_documented_safe_limit"},
+    {"id": "ECON-REPLAY", "balance": 100, "price": 25, "quantity": 1, "repeat_request": 2, "expected": "idempotency_grants_once"},
+    {"id": "ECON-REWARD-REPLAY", "reward_id": "qa-reward-once", "repeat_claim": 2, "expected": "reward_granted_once"}
+  ]
+}

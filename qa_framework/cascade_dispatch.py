@@ -44,7 +44,6 @@ class CascadeDispatchRouter:
         return self.models[-1]
 
     def record_result(self, model: str, output: str) -> bool:
-        """Record dispatch result. Returns True if output is acceptable."""
         self._total_dispatches += 1
         self._model_usage[model] = self._model_usage.get(model, 0) + 1
         if self.policy.should_escalate(output, model):
@@ -63,7 +62,6 @@ class CascadeDispatchRouter:
             self._escalations += 1
 
     def record_connection_error(self, model: str) -> None:
-        """Immediately escalate on connection failure."""
         self._failure_counts[model] = self.policy.max_consecutive_failures + 1
         self._escalate()
 

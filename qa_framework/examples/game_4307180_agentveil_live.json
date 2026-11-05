@@ -1,0 +1,17 @@
+{
+  "timeout": 60.0,
+  "capture_delay": 2.0,
+  "executable_name": "AgentVeil.exe",
+  "monitor_index": 1,
+  "screenshot_dir": "screenshots/live",
+  "assertions": [
+    {
+      "name": "renders non-black frame after startup",
+      "check": "color_detected",
+      "color": [65, 58, 52],
+      "tolerance": 45
+    }
+  ]
+}
+
+

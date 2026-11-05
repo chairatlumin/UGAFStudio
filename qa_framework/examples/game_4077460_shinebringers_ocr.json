@@ -1,0 +1,33 @@
+{
+  "timeout": 60.0,
+  "capture_delay": 3.0,
+  "capture_poll_seconds": 30.0,
+  "executable_name": "SwishAndFlick/Binaries/Win64/SwishAndFlickDemo.exe",
+  "monitor_index": 1,
+  "screenshot_dir": "screenshots/live/ocr",
+  "assertions": [
+    {
+      "name": "renders non-black frame after startup",
+      "check": "color_detected",
+      "color": [65, 67, 70],
+      "tolerance": 40
+    },
+    {
+      "name": "main menu shows 'Play Showcase'",
+      "check": "ocr_region_contains",
+      "text": "Play Showcase",
+      "region": [700, 640, 520, 280],
+      "preprocessing": "ui",
+      "psm": 6
+    },
+    {
+      "name": "main menu word 'Exit' present",
+      "check": "ocr_word_present",
+      "text": "Exit",
+      "region": [700, 640, 520, 280],
+      "preprocessing": "ui",
+      "psm": 6,
+      "confidence_threshold": 0.5
+    }
+  ]
+}

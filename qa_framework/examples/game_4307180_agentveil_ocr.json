@@ -1,0 +1,33 @@
+{
+  "timeout": 60.0,
+  "capture_delay": 3.0,
+  "executable_name": "AgentVeil.exe",
+  "monitor_index": 1,
+  "screenshot_dir": "screenshots/live/ocr",
+  "assertions": [
+    {
+      "name": "renders non-black frame after startup",
+      "check": "color_detected",
+      "color": [65, 58, 52],
+      "tolerance": 40
+    },
+    {
+      "name": "main menu shows Tutorial entry",
+      "check": "ocr_word_present",
+      "text": "Tutorial",
+      "region": [400, 300, 736, 300],
+      "preprocessing": "ui",
+      "psm": 7,
+      "confidence_threshold": 0.5
+    },
+    {
+      "name": "main menu shows Settings entry",
+      "check": "ocr_contains",
+      "text": "Settings",
+      "region": [400, 300, 736, 300],
+      "preprocessing": "ui",
+      "psm": 7,
+      "confidence_threshold": 0.5
+    }
+  ]
+}
