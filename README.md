@@ -54,3 +54,7 @@ scripts/   Developer tooling
 main.py    Application entry point
 launcher.py
 ```
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
